@@ -83,7 +83,9 @@ Contributions are welcome! Just PR but please use `perltidy` and `perlimports` w
 
 ## Demo
 
-- For an example project, check out [koha-plugin-pomodoro](https://github.com/pders01/koha-plugin-pomodoro)
+For example projects, check out:
+- [koha-plugin-pomodoro](https://github.com/pders01/koha-plugin-pomodoro)
+- [koha-plugin-command-palette](https://github.com/pders01/koha-plugin-command-palette) (This one is an example for a plugin that migrated to pders01/koha-plugin)
 
 
 ## Authors
