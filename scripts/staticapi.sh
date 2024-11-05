@@ -16,11 +16,13 @@ fi
 
 STATIC_PATH="$PLUGIN_PATH/$STATIC_DIR"
 if [ ! -d "$STATIC_PATH" ]; then
+  echo "Directory $PLUGIN_PATH/$STATIC_DIR not found."
   exit 1
 fi
 
 staticapi_template_file="templates/staticapi.json"
 if [ ! -f "$staticapi_template_file" ]; then
+  echo "Template file $staticapi_template_file not found."
   exit 1
 fi
 
