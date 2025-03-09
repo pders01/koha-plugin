@@ -39,3 +39,6 @@ ktd container="kohadev-koha-1" binary="docker":
 update-meta:
   ./scripts/update-meta.sh
 
+# Build standalone binary
+binary:
+  carton exec -- perl scripts/build-binary.pl

@@ -10,3 +10,4 @@ requires 'Term::ReadLine';
 requires 'Term::UI';
 requires 'Types::Standard';
 requires 'YAML::Tiny';
+requires 'pp';

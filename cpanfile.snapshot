@@ -14,6 +14,36 @@ DISTRIBUTIONS
       ExtUtils::MakeMaker 0
       Test::More 0
       perl 5.008008
+  Archive-Zip-1.68
+    pathname: P/PH/PHRED/Archive-Zip-1.68.tar.gz
+    provides:
+      Archive::Zip 1.68
+      Archive::Zip::Archive 1.68
+      Archive::Zip::BufferedFileHandle 1.68
+      Archive::Zip::DirectoryMember 1.68
+      Archive::Zip::FileMember 1.68
+      Archive::Zip::Member 1.68
+      Archive::Zip::MemberRead 1.68
+      Archive::Zip::MockFileHandle 1.68
+      Archive::Zip::NewFileMember 1.68
+      Archive::Zip::StringMember 1.68
+      Archive::Zip::Tree 1.68
+      Archive::Zip::ZipFileMember 1.68
+    requirements:
+      Compress::Raw::Zlib 2.017
+      Encode 0
+      ExtUtils::MakeMaker 0
+      File::Basename 0
+      File::Copy 0
+      File::Find 0
+      File::Path 0
+      File::Spec 0.80
+      File::Temp 0
+      IO::File 0
+      IO::Handle 0
+      IO::Seekable 0
+      Time::Local 0
+      perl 5.006
   B-Hooks-EndOfScope-0.28
     pathname: E/ET/ETHER/B-Hooks-EndOfScope-0.28.tar.gz
     provides:
@@ -598,6 +628,15 @@ DISTRIBUTIONS
       perl 5.006
       strict 0
       warnings 0
+  Getopt-ArgvFile-1.11
+    pathname: J/JS/JSTENZEL/Getopt-ArgvFile-1.11.tar.gz
+    provides:
+      Getopt::ArgvFile 1.11
+    requirements:
+      ExtUtils::MakeMaker 0
+      Test::Harness 1.25
+      Test::More 0.11
+      Text::ParseWords 3.1
   JSON-4.10
     pathname: I/IS/ISHIGAKI/JSON-4.10.tar.gz
     provides:
@@ -730,6 +769,78 @@ DISTRIBUTIONS
       perl 5.006
       strict 0
       warnings 0
+  Module-ScanDeps-1.37
+    pathname: R/RS/RSCHUPP/Module-ScanDeps-1.37.tar.gz
+    provides:
+      Module::ScanDeps 1.37
+    requirements:
+      ExtUtils::MakeMaker 0
+      File::Spec 0
+      File::Temp 0
+      Getopt::Long 0
+      List::Util 1.33
+      Module::Metadata 0
+      Text::ParseWords 0
+      perl 5.008009
+      version 0
+  PAR-1.020
+    pathname: R/RS/RSCHUPP/PAR-1.020.tar.gz
+    provides:
+      PAR 1.020
+      PAR::Heavy 0.12
+      PAR::SetupProgname 1.002
+      PAR::SetupTemp 1.002
+    requirements:
+      Archive::Zip 1.00
+      AutoLoader 5.66_02
+      Compress::Zlib 1.30
+      Digest::SHA 5.45
+      ExtUtils::MakeMaker 0
+      File::Temp 0.05
+      PAR::Dist 0.32
+      perl 5.008009
+  PAR-Dist-0.53
+    pathname: R/RS/RSCHUPP/PAR-Dist-0.53.tar.gz
+    provides:
+      PAR::Dist 0.53
+    requirements:
+      ExtUtils::MakeMaker 0
+      File::Find 0
+      File::Path 0
+      File::Spec 0
+      File::Temp 0
+  PAR-Packer-1.063
+    pathname: R/RS/RSCHUPP/PAR-Packer-1.063.tar.gz
+    provides:
+      App::Packer::PAR 0.91
+      PAR::Filter 0.03
+      PAR::Filter::Bleach undef
+      PAR::Filter::Bytecode undef
+      PAR::Filter::Obfuscate undef
+      PAR::Filter::PatchContent undef
+      PAR::Filter::PodStrip undef
+      PAR::Packer 1.063
+      PAR::StrippedPARL::Base 0.975
+      pp 0.992
+    requirements:
+      Archive::Zip 1.02
+      Compress::Zlib 1.30
+      Digest::SHA 5.40
+      DynaLoader 0
+      ExtUtils::CBuilder 0
+      ExtUtils::Embed 0
+      ExtUtils::MakeMaker 6.31
+      File::Basename 0
+      File::Glob 0
+      File::Spec::Functions 0
+      File::Temp 0.05
+      Getopt::ArgvFile 1.07
+      IO::Compress::Gzip 0
+      Module::ScanDeps 1.21
+      PAR 1.020
+      PAR::Dist 0.22
+      Text::ParseWords 0
+      perl 5.008009
   Package-Stash-0.40
     pathname: E/ET/ETHER/Package-Stash-0.40.tar.gz
     provides:
