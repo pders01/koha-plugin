@@ -1,6 +1,7 @@
 
 =pod
 
+
 =head3 uninstall
 
 This subroutine is run just before the plugin files are deleted when a plugin is uninstalled.
@@ -8,11 +9,13 @@ This subroutine is run just before the plugin files are deleted when a plugin is
 It is good practice to clean up any data or database changes made by the plugin during its use. 
 This might include removing custom database tables or other resources used by the plugin.
 
+Context: Cleanup operations prior to plugin removal.
+
 =over 4
 
 =item *
 
-B<Parameters:>
+B<Parameters>
 
 =over 8
 
@@ -28,7 +31,9 @@ C<$args> - HashRef containing additional arguments for cleanup (optional)
 
 =item *
 
-B<Returns:> Void
+B<Returns>
+
+Void
 
 =back
 

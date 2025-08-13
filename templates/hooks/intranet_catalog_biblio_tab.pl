@@ -12,11 +12,13 @@ displayed on the staff record details page.
 This hook provides flexibility to display any custom content within tabs as required 
 by the plugin.
 
+Context: Adds one or more tabs to the intranet biblio detail page.
+
 =over 4
 
 =item *
 
-B<Parameters:>
+B<Parameters>
 
 =over 8
 
@@ -28,7 +30,9 @@ C<$self> - Koha::Plugin object (plugin instance)
 
 =item *
 
-B<Returns:> ArrayRef of Koha::Plugins::Tab objects, each representing a tab with a title and content.
+B<Returns>
+
+ArrayRef of Koha::Plugins::Tab objects (each with title and content)
 
 =back
 

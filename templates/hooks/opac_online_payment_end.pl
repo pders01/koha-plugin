@@ -12,11 +12,13 @@ the subroutine processes the payment and prepares the appropriate message for th
 It is responsible for handling payment validation and finalizing the transaction, 
 depending on how the payment process is structured within the plugin.
 
+Context: End OPAC payment flow; finalize and render success/failure.
+
 =over 4
 
 =item *
 
-B<Parameters:>
+B<Parameters>
 
 =over 8
 
@@ -32,7 +34,9 @@ C<$args> - HashRef containing parameters related to the payment process
 
 =item *
 
-B<Returns:> Void
+B<Returns>
+
+Void (HTML output)
 
 =back
 

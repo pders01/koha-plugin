@@ -7,11 +7,13 @@ This subroutine is a plugin hook that transforms input strings wherever item bar
 
 It operates on a reference to the barcode value and modifies the referenced value directly. There is no need to return a new value, as the transformation is applied in-place. This allows the plugin to alter barcode formats or add prefixes/suffixes as needed.
 
+Context: Transform item barcode in-place wherever scanned.
+
 =over 4
 
 =item *
 
-B<Parameters:>
+B<Parameters>
 
 =over 8
 
@@ -27,7 +29,9 @@ C<$barcode_ref> - Reference to the barcode value being scanned
 
 =item *
 
-B<Returns:> Void (modifies barcode in-place)
+B<Returns>
+
+Void (modifies barcode in-place)
 
 =back
 

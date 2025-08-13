@@ -12,11 +12,13 @@ or modifying database entries.
 
 The tool's logic can be modularized into different steps, depending on the complexity of the process.
 
+Context: Must be launched from plugins home page; typically modifies data.
+
 =over 4
 
 =item *
 
-B<Parameters:>
+B<Parameters>
 
 =over 8
 
@@ -32,7 +34,9 @@ C<$args> - HashRef containing the parameters for tool processing
 
 =item *
 
-B<Returns:> Void
+B<Returns>
+
+Void (HTML output via output_html)
 
 =back
 

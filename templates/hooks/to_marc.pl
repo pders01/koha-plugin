@@ -11,11 +11,13 @@ This method is designed to convert data from an arbitrary format into MARC recor
 
 The subroutine parses each line and converts it into a basic MARC record, but this can be customized to suit other data formats or MARC record structures.
 
+Context: Convert arbitrary files to MARC for staging tool.
+
 =over 4
 
 =item *
 
-B<Parameters:>
+B<Parameters>
 
 =over 8
 
@@ -31,7 +33,9 @@ C<$args> - HashRef containing the data to be converted
 
 =item *
 
-B<Returns:> String - A string of MARC records in USMARC format
+B<Returns>
+
+String - MARC records in USMARC format
 
 =back
 

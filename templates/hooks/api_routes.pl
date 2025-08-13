@@ -1,7 +1,8 @@
 
 =pod
 
-=head2 api_routes
+
+=head3 api_routes
 
 This subroutine returns valid OpenAPI 2.0 paths serialized as a hash reference.
 
@@ -13,11 +14,13 @@ prototyping tool for developing API routes.
 
 This subroutine depends on the C<JSON> module for decoding the JSON specification.
 
+Context: Extend Koha REST API via plugin-defined OpenAPI 2.0 routes.
+
 =over 4
 
 =item *
 
-B<Parameters:>
+B<Parameters>
 
 =over 8
 
@@ -33,7 +36,9 @@ C<$args> - HashRef containing additional arguments for route processing (optiona
 
 =item *
 
-B<Returns:> HashRef containing the deserialized OpenAPI 2.0 paths.
+B<Returns>
+
+HashRef of deserialized OpenAPI 2.0 paths
 
 =back
 

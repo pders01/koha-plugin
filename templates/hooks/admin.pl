@@ -9,11 +9,13 @@ should only be available to Koha librarians with administrative privileges.
 Such plugins will be displayed on the admin page and work in a similar way to the 'tool'
 system.
 
+Context: Admin-only entry point from the Admin page; similar to tools but privileged.
+
 =over 4
 
 =item *
 
-B<Parameters:>
+B<Parameters>
 
 =over 8
 
@@ -29,7 +31,9 @@ C<$args> - HashRef containing arguments for the admin functionality
 
 =item *
 
-B<Returns:> Void
+B<Returns>
+
+Void (HTML output via output_html)
 
 =back
 

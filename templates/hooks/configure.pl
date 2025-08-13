@@ -1,12 +1,13 @@
 
 =pod
 
+
 =head3 configure
 
 This subroutine provides a hook for adding a configuration interface to the plugin.
 
-Plugins can use this method to either display a configuration page where users can adjust 
-settings or save the updated settings submitted via a form. The actual logic for rendering 
+Plugins can use this method to either display a configuration page where users can adjust
+settings or save the updated settings submitted via a form. The actual logic for rendering
 the configuration page or storing data is flexible and up to the plugin’s needs.
 
 Commonly, the configuration might include fields for enabling or disabling features, setting values,
@@ -14,27 +15,23 @@ and storing user-specific data.
 
 The method is designed to be extended and adapted to various plugin requirements.
 
+Context: Add a configuration interface for the plugin (render and/or save form data).
+
 =over 4
 
-=item *
-
-B<Parameters:>
+=item * Parameters
 
 =over 8
 
-=item *
+=item * C<$self> - Koha::Plugin object (plugin instance)
 
-C<$self> - Koha::Plugin object (plugin instance)
-
-=item *
-
-C<$args> - HashRef containing optional arguments for configuration handling
+=item * C<$args> - HashRef of optional arguments for configuration handling
 
 =back
 
-=item *
+=item * Returns
 
-B<Returns:> Void
+Void (HTML output via output_html)
 
 =back
 

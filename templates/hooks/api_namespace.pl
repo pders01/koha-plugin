@@ -1,33 +1,20 @@
 
 =pod
 
-=head2 api_namespace
 
-This subroutine defines the API namespace for the plugin. It returns the value
-C<[a]>, which represents the subdomain in a structured domain format such as
-C<[c].[b].[a]>.
+=head3 api_namespace
 
-In this context, the API namespace is typically used as part of a domain structure,
-where C<[a]> is the subdomain, e.g., C<tld.org.project> for C<[a]> = C<project>, 
-C<[b]> = C<org>, and C<[c]> = C<tld>.
+Context: Define the API namespace for the plugin (subdomain-like component).
 
 =over 4
 
-=item *
+=item * Parameters
 
-B<Parameters:> 
+C<$self>
 
-=over 8
+=item * Returns
 
-=item *
-
-C<$self> - Koha::Plugin object (plugin instance)
-
-=back
-
-=item *
-
-B<Returns:> String representing the subdomain (C<[a]>).
+String representing the subdomain (C<[a]>), e.g., for C<[c].[b].[a]>.
 
 =back
 

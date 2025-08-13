@@ -12,11 +12,13 @@ links, or other HTML components relevant to the plugin's functionality.
 In this example, the subroutine returns a button with an icon and a JavaScript alert. 
 The method returns a string of raw HTML that can be inserted into the toolbar.
 
+Context: Adds elements to the catalogue detail toolbar in staff interface.
+
 =over 4
 
 =item *
 
-B<Parameters:>
+B<Parameters>
 
 =over 8
 
@@ -28,7 +30,9 @@ C<$self> - Koha::Plugin object (plugin instance)
 
 =item *
 
-B<Returns:> String - a raw HTML string to be inserted into the toolbar.
+B<Returns>
+
+String - raw HTML to insert into the toolbar
 
 =back
 

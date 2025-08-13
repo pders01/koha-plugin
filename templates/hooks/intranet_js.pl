@@ -1,17 +1,20 @@
 
 =pod
 
+
 =head3 intranet_js
 
 This subroutine allows the plugin to inject custom JavaScript into the staff intranet interface.
 
 You can return a string of JavaScript wrapped in C<< <script> >> tags if necessary, or include external JavaScript files by constructing the appropriate HTML. This gives the plugin flexibility to include inline JavaScript or reference external JavaScript resources as needed.
 
+Context: Global JS/HTML injection for the staff interface.
+
 =over 4
 
 =item *
 
-B<Parameters:>
+B<Parameters>
 
 =over 8
 
@@ -23,7 +26,9 @@ C<$self> - Koha::Plugin object (plugin instance)
 
 =item *
 
-B<Returns:> String - a string containing JavaScript or HTML to be included in the intranet.
+B<Returns>
+
+String - HTML/JS to include in intranet
 
 =back
 

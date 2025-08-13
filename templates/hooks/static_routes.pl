@@ -1,37 +1,34 @@
 
 =pod
 
+
 =head3 static_routes
 
 This subroutine returns static API routes from a predefined JSON specification file.
 
-It reads the JSON file, parses it, and returns the resulting data structure as a hash reference. 
-This method is typically used to provide static API routes that do not change dynamically and 
+It reads the JSON file, parses it, and returns the resulting data structure as a hash reference.
+This method is typically used to provide static API routes that do not change dynamically and
 are predefined in the plugin.
 
 This subroutine depends on the C<JSON> module for decoding the JSON specification.
 
+Context: Serve static files through the API without Apache changes.
+
 =over 4
 
-=item *
-
-B<Parameters:>
+=item * Parameters
 
 =over 8
 
-=item *
+=item * C<$self> - Koha::Plugin object (plugin instance)
 
-C<$self> - Koha::Plugin object (plugin instance)
-
-=item *
-
-C<$args> - HashRef containing parameters related to route handling
+=item * C<$args> - HashRef containing parameters related to route handling
 
 =back
 
-=item *
+=item * Returns
 
-B<Returns:> HashRef - The parsed JSON structure representing static API routes.
+HashRef - The parsed JSON structure representing static API routes.
 
 =back
 

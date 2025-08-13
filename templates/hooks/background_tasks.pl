@@ -18,11 +18,15 @@ a hash like the following:
 
 In this case, the method returns an empty hash reference, meaning no background jobs are registered by default.
 
+Context: Register plugin background task codes to implementing classes.
+
 =over 4
 
 =item *
 
-B<Returns:> HashRef that maps job names to their handling classes.
+B<Returns>
+
+HashRef mapping job names to implementing classes
 
 =back
 

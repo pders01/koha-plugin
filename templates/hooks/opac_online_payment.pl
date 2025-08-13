@@ -10,11 +10,13 @@ It returns a true value if the online payment functionality is enabled within th
 configuration. The feature is typically toggled by the C<enable_opac_payments> setting, 
 which the plugin retrieves from stored data.
 
+Context: Check if plugin provides OPAC online payments.
+
 =over 4
 
 =item *
 
-B<Parameters:>
+B<Parameters>
 
 =over 8
 
@@ -30,7 +32,9 @@ C<$args> - HashRef containing optional parameters related to payment processing
 
 =item *
 
-B<Returns:> Boolean - true if online payments are enabled, false otherwise.
+B<Returns>
+
+Boolean - true if online payments are enabled, false otherwise
 
 =back
 

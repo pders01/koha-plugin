@@ -10,11 +10,13 @@ synchronization, or other maintenance work that needs to be executed on a schedu
 The actual logic can vary depending on the plugin’s requirements, and this hook 
 offers flexibility for handling nightly background operations.
 
+Context: Run daily background tasks when plugins_nightly cron executes.
+
 =over 4
 
 =item *
 
-B<Parameters:>
+B<Parameters>
 
 =over 8
 
@@ -26,7 +28,9 @@ C<$self> - Koha::Plugin object (plugin instance)
 
 =item *
 
-B<Returns:> Void
+B<Returns>
+
+Void
 
 =back
 

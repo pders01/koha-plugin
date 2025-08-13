@@ -1,17 +1,20 @@
 
 =pod
 
+
 =head3 intranet_head
 
 This subroutine allows the plugin to add custom CSS to the staff intranet interface.
 
 You can return a string of CSS here, wrapped in C<< <style> >> tags if needed, or include external CSS files by constructing the appropriate HTML. This flexibility allows plugins to style the intranet interface in various ways, including injecting inline styles or linking to external resources.
 
+Context: Global CSS/HTML injection into intranet head.
+
 =over 4
 
 =item *
 
-B<Parameters:>
+B<Parameters>
 
 =over 8
 
@@ -23,7 +26,9 @@ C<$self> - Koha::Plugin object (plugin instance)
 
 =item *
 
-B<Returns:> String - a string containing HTML, CSS or JavaScript to be included in the intranet head.
+B<Returns>
+
+String - HTML/CSS/JS to include in intranet head
 
 =back
 

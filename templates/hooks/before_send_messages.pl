@@ -13,11 +13,13 @@ For example, the subroutine could log the parameters or manipulate them before a
 
 In this case, the subroutine does not perform any actions and returns an empty value by default.
 
+Context: Pre-process messages prior to dispatch (filter/mutate/log).
+
 =over 4
 
 =item *
 
-B<Parameters:>
+B<Parameters>
 
 =over 8
 
@@ -33,7 +35,9 @@ C<$params> - HashRef containing the message queue parameters
 
 =item *
 
-B<Returns:> Void
+B<Returns>
+
+Void
 
 =back
 

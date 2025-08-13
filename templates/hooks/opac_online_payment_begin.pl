@@ -13,11 +13,13 @@ It is responsible for gathering account details, payment method information, and
 the necessary data for the payment process. The subroutine should be adapted based on 
 the payment service being used and how the plugin handles online payments.
 
+Context: Begin OPAC payment flow; prepare form or redirect to PSP.
+
 =over 4
 
 =item *
 
-B<Parameters:>
+B<Parameters>
 
 =over 8
 
@@ -33,7 +35,9 @@ C<$args> - HashRef containing parameters for the payment process
 
 =item *
 
-B<Returns:> Void
+B<Returns>
+
+Void (HTML output or redirect)
 
 =back
 
