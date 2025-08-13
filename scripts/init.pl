@@ -38,17 +38,42 @@ Readonly my $HOOKS => [
         tool
         api
         static
+        edifact
         intranet_catalog_biblio_enhancements_toolbar_button
         intranet_catalog_biblio_tab
         intranet_head
         intranet_js
+        check_password
+        after_biblio_action
+        before_biblio_action
+        after_item_action
         opac_detail_xslt_variables
         opac_head
         opac_js
         opac_online_payment
+        opac_online_payment_threshold
         opac_results_xslt_variables
         patron_barcode_transform
         item_barcode_transform
+        ill_availability_services
+        ill_backend
+        new_ill_backend
+        after_hold_create
+        after_circ_action
+        after_authority_action
+        after_hold_action
+        after_recall_action
+        after_account_action
+        intranet_cover_images
+        opac_cover_images
+        patron_consent_type
+        template_include_paths
+        auth_client_get_user
+        framework_defaults_override
+        before_orderline_create
+        overwrite_calc_fine
+        elasticsearch_to_document
+        notices_content
         background_tasks
         before_send_messages
         cronjob_nightly
