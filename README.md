@@ -88,6 +88,12 @@ For example projects, check out:
 - [koha-plugin-command-palette](https://github.com/pders01/koha-plugin-command-palette) (This one is an example for a plugin that migrated to pders01/koha-plugin)
 
 
+## Documentation
+
+- Hook coverage and usage: `docs/koha-plugin-hooks.md`
+- Minimal plugin example (inject JS via `intranet_js`): `docs/how-to-write-a-simple-plugin.md`
+
+
 ## Authors
 
 - [@pders01](https://www.github.com/pders01)
