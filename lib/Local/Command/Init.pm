@@ -3,6 +3,7 @@ package Local::Command::Init;
 use strict;
 use warnings;
 
+use File::Path     qw( remove_tree );
 use Path::Tiny     qw( cwd path );
 use Perl::Tidy     qw( perltidy );
 use Readonly       qw( Readonly );
@@ -12,6 +13,7 @@ use Term::UI       ();
 use Term::ReadLine ();
 use YAML::Tiny     ();
 
+use Local::Config   qw( save_config );
 use Local::Metadata qw( metadata_from_env validate_metadata stringify_metadata );
 use Local::Util     qw( l asset_dir );
 
@@ -98,56 +100,74 @@ sub run_init {
         l( 'error', "plugin path is not a directory: $path" ) and return;
     }
 
-    my $tt = Template->new( { INCLUDE_PATH => asset_dir('templates') } );
-    if ($Template::ERROR) {
-        l( 'error', $Template::ERROR ) and return;
-    }
+    my $ok = eval {
+        my $tt = Template->new( { INCLUDE_PATH => asset_dir('templates') } );
+        if ($Template::ERROR) {
+            die "Template error: $Template::ERROR\n";
+        }
 
-    my $base  = _base_module_path( $path, $components->@[ $CONST->{'INDEX_PROJECT'} ] );
-    my $hooks = [
-        choose(
-            $HOOKS,
-            {   color => 2,
-                info  =>
-                    q{Please choose the hooks you'd like to use in your plugin. Some are grouped: api, opac_online_payment.},
-                prompt => q{Select as many as you like with SPACE, then hit ENTER. :)}
-            }
-        )
-    ];
+        my $base  = _base_module_path( $path, $components->@[ $CONST->{'INDEX_PROJECT'} ] );
+        my $hooks = [
+            choose(
+                $HOOKS,
+                {   color => 2,
+                    info  =>
+                        q{Please choose the hooks you'd like to use in your plugin. Some are grouped: api, opac_online_payment.},
+                    prompt => q{Select as many as you like with SPACE, then hit ENTER. :)}
+                }
+            )
+        ];
 
-    $tt->process(
-        '[a].pm.tt',
-        {   c        => $components->@[ $CONST->{'INDEX_TLD'} ],
-            b        => $components->@[ $CONST->{'INDEX_ORG'} ],
-            a        => $components->@[ $CONST->{'INDEX_PROJECT'} ],
-            version  => $metadata->{version} // '0.0.1',
-            metadata => stringify_metadata($metadata),
-            ( $hooks->@* ? map { $_ => 1 } $hooks->@* : () )
-        },
-        _base_module_path( $path, $components->@[ $CONST->{'INDEX_PROJECT'} ] ),
-    );
-    if ( $tt->error ) {
-        l( 'error', $tt->error ) and return;
-    }
+        $tt->process(
+            '[a].pm.tt',
+            {   c        => $components->@[ $CONST->{'INDEX_TLD'} ],
+                b        => $components->@[ $CONST->{'INDEX_ORG'} ],
+                a        => $components->@[ $CONST->{'INDEX_PROJECT'} ],
+                version  => $metadata->{version} // '0.0.1',
+                metadata => stringify_metadata($metadata),
+                ( $hooks->@* ? map { $_ => 1 } $hooks->@* : () )
+            },
+            _base_module_path( $path, $components->@[ $CONST->{'INDEX_PROJECT'} ] ),
+        );
+        if ( $tt->error ) {
+            die 'Template processing failed: ' . $tt->error . "\n";
+        }
 
-    my $error = perltidy( source => $base, destination => $base );
-    if ($error) {
-        l( 'error', $error ) and return;
-    }
+        my $tidy_error = perltidy( source => $base, destination => $base );
+        if ($tidy_error) {
+            die "Perl::Tidy failed: $tidy_error\n";
+        }
 
-    my $manifest = YAML::Tiny->new( { $metadata->%*, module => join q{::}, $components->@* } );
-    if ( !$manifest ) {
-        l( 'error', 'manifest could not be generated' ) and return;
-    }
+        my $manifest = YAML::Tiny->new( { $metadata->%*, module => join q{::}, $components->@* } );
+        if ( !$manifest ) {
+            die "manifest could not be generated\n";
+        }
 
-    $manifest->write("$path/PLUGIN.yml");
+        $manifest->write("$path/PLUGIN.yml");
 
-    # Create empty openapi.json when api hooks are selected
-    my %selected = map { $_ => 1 } $hooks->@*;
-    if ( $selected{api} ) {
-        my $openapi_dest = path("$path/openapi.json");
-        $openapi_dest->spew_utf8("{}\n");
-        l( 'info', "created $openapi_dest — run 'koha-plugin add api-route' to add routes" );
+        # Write config file from collected metadata
+        save_config( $metadata, 'koha-plugin.yml' );
+        l( 'info', 'created koha-plugin.yml' );
+
+        # Create empty openapi.json when api hooks are selected
+        my %selected = map { $_ => 1 } $hooks->@*;
+        if ( $selected{api} ) {
+            my $openapi_dest = path("$path/openapi.json");
+            $openapi_dest->spew_utf8("{}\n");
+            l( 'info', "created $openapi_dest — run 'koha-plugin add api-route' to add routes" );
+        }
+
+        1;
+    };
+
+    if ( !$ok ) {
+        l( 'error', $@ );
+        l( 'warning', "cleaning up $path" );
+        remove_tree("$path");
+        # Also remove the base module file if it was created outside the dir
+        my $base_file = _base_module_path( $path, $components->@[ $CONST->{'INDEX_PROJECT'} ] );
+        unlink $base_file if -e $base_file;
+        return;
     }
 
     return 1;
