@@ -107,9 +107,7 @@ sub new {
     [% INCLUDE hooks/opac_online_payment_begin.pl %]
 
     [% INCLUDE hooks/opac_online_payment_end.pl %]
-[% END %]
 
-[% IF opac_online_payment_threshold %]
     [% INCLUDE hooks/opac_online_payment_threshold.pl %]
 [% END %]
 

@@ -28,60 +28,59 @@ Readonly my $CONST => {
     LENGTH_COMPONENTS => 5
 };
 
+# Hooks are grouped by category for the selection UI.
+# Some entries are bundles: 'api' expands to api_namespace + api_routes,
+# 'opac_online_payment' includes begin/end/threshold.
 Readonly my $HOOKS => [
-    qw(
-        install
-        upgrade
-        uninstall
-        admin
-        configure
-        report
-        tool
-        api
-        static
-        edifact
+
+    # --- Lifecycle ---
+    qw( install upgrade uninstall ),
+
+    # --- UI pages ---
+    qw( admin configure report tool ),
+
+    # --- API & static files ---
+    qw( api static ),
+
+    # --- Staff interface ---
+    qw( intranet_head intranet_js
         intranet_catalog_biblio_enhancements_toolbar_button
         intranet_catalog_biblio_tab
-        intranet_head
-        intranet_js
-        check_password
-        after_biblio_action
-        before_biblio_action
-        after_item_action
-        opac_detail_xslt_variables
-        opac_head
-        opac_js
-        opac_online_payment
-        opac_online_payment_threshold
-        opac_results_xslt_variables
-        patron_barcode_transform
-        item_barcode_transform
-        ill_availability_services
-        ill_backend
-        new_ill_backend
-        after_hold_create
-        after_circ_action
-        after_authority_action
-        after_hold_action
-        after_recall_action
-        after_account_action
-        intranet_cover_images
+        intranet_cover_images ),
+
+    # --- OPAC ---
+    qw( opac_head opac_js
+        opac_detail_xslt_variables opac_results_xslt_variables
         opac_cover_images
-        patron_consent_type
-        template_include_paths
-        auth_client_get_user
-        framework_defaults_override
-        before_orderline_create
-        overwrite_calc_fine
-        elasticsearch_to_document
-        notices_content
-        background_tasks
-        before_send_messages
-        patron_generate_userid
-        cronjob_nightly
-        to_marc
-        transform_prepared_letter
-    )
+        opac_online_payment ),
+
+    # --- Patron ---
+    qw( check_password patron_barcode_transform
+        patron_generate_userid patron_consent_type
+        auth_client_get_user ),
+
+    # --- Catalog CRUD ---
+    qw( before_biblio_action after_biblio_action
+        after_item_action after_authority_action ),
+
+    # --- Circulation ---
+    qw( after_circ_action after_hold_create after_hold_action
+        after_recall_action after_account_action ),
+
+    # --- Notices & messaging ---
+    qw( notices_content transform_prepared_letter before_send_messages ),
+
+    # --- ILL ---
+    qw( ill_backend new_ill_backend ill_availability_services ),
+
+    # --- Background & scheduling ---
+    qw( background_tasks cronjob_nightly ),
+
+    # --- Miscellaneous ---
+    qw( edifact to_marc item_barcode_transform
+        template_include_paths framework_defaults_override
+        before_orderline_create overwrite_calc_fine
+        elasticsearch_to_document ),
 ];
 
 sub run_init {
@@ -111,9 +110,10 @@ sub run_init {
             choose(
                 $HOOKS,
                 {   color => 2,
-                    info  =>
-                        q{Please choose the hooks you'd like to use in your plugin. Some are grouped: api, opac_online_payment.},
-                    prompt => q{Select as many as you like with SPACE, then hit ENTER. :)}
+                    info  => qq{Hooks are grouped by category. Bundles:\n}
+                        . qq{  api = api_namespace + api_routes\n}
+                        . qq{  opac_online_payment = payment + begin/end/threshold},
+                    prompt => q{Select with SPACE, confirm with ENTER.}
                 }
             )
         ];
