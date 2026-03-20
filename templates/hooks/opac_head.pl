@@ -38,5 +38,8 @@ sub opac_head {
     my $self = shift;
 
     return <<~'CSS';
+[%- IF static %]
+    <link rel="stylesheet" href="/api/v1/contrib/[% project %]/static/dist/main.css">
+[%- END %]
     CSS
 }

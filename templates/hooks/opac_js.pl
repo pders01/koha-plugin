@@ -38,5 +38,8 @@ sub opac_js {
     my $self = shift;
 
     return <<~'JS';
+[%- IF static %]
+    <script src="/api/v1/contrib/[% project %]/static/dist/main.js"></script>
+[%- END %]
     JS
 }
