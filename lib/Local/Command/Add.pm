@@ -901,7 +901,7 @@ sub _add_vue {
     l( 'info', "  3. npm run build" );
     l( 'info', "  4. register the island in your intranet_js hook:" );
     l( 'info', "     registerIsland(\"$tag_name\", {" );
-    l( 'info', "       importFn: () => import(\"/api/v1/contrib/$api_ns/static/dist/$component_name.js\")," );
+    l( 'info', "       importFn: () => import(\"/api/v1/contrib/$api_ns/static/$component_name.js\")," );
     l( 'info', "       config: { stores: [] }," );
     l( 'info', "     });" );
 

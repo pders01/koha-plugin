@@ -35,7 +35,7 @@ sub intranet_head {
 
     return <<~'CSS';
 [%- IF static %]
-    <link rel="stylesheet" href="/api/v1/contrib/[% project %]/static/dist/main.css">
+    <link rel="stylesheet" href="/api/v1/contrib/[% project %]/static/main.css">
 [%- END %]
     CSS
 }

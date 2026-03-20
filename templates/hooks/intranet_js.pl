@@ -35,7 +35,7 @@ sub intranet_js {
 
     return <<~'JS';
 [%- IF static %]
-    <script src="/api/v1/contrib/[% project %]/static/dist/main.js"></script>
+    <script src="/api/v1/contrib/[% project %]/static/main.js"></script>
 [%- END %]
     JS
 }
