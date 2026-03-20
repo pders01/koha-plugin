@@ -115,7 +115,7 @@ sub _cmd_add {
     my ($component) = @_;
     if ( !$component ) {
         l( 'error', 'usage: koha-plugin add <component>' );
-        l( 'info', 'components: action, node, api-route' );
+        l( 'info',  'components: action, node, api-route' );
         exit 1;
     }
     run_add($component);

@@ -3,15 +3,15 @@ package Local::Command::Add;
 use strict;
 use warnings;
 
-use Carp          qw( croak );
-use IPC::Open3    qw( open3 );
-use JSON          qw( decode_json );
-use Path::Tiny    qw( cwd path );
-use Readonly      qw( Readonly );
-use Symbol        qw( gensym );
-use Template      ();
-use Term::Choose  qw( choose );
-use Term::UI      ();
+use Carp           qw( croak );
+use IPC::Open3     qw( open3 );
+use JSON           qw( decode_json );
+use Path::Tiny     qw( cwd path );
+use Readonly       qw( Readonly );
+use Symbol         qw( gensym );
+use Template       ();
+use Term::Choose   qw( choose );
+use Term::UI       ();
 use Term::ReadLine ();
 
 use Local::Metadata qw( metadata_from_env );
@@ -200,16 +200,17 @@ sub _add_api_route {
     my $tld     = $components->@[2];
     my $org     = $components->@[3];
     my $project = $components->@[4];
-    my $mojo_to = $controller
+    my $mojo_to
+        = $controller
         ? "${tld}::${org}::${project}::${controller}"
         : "${tld}::${org}::${project}::DefaultController#${operation_id}";
 
     my $route = {
-        "x-mojo-to"    => $mojo_to,
-        operationId    => $operation_id,
-        tags           => [$project],
-        produces       => ['application/json'],
-        responses      => {
+        "x-mojo-to" => $mojo_to,
+        operationId => $operation_id,
+        tags        => [$project],
+        produces    => ['application/json'],
+        responses   => {
             '200' => {
                 description => $description,
                 schema      => { type => 'object' },
@@ -239,9 +240,7 @@ sub _add_api_route {
                 },
             },
         },
-        'x-koha-authorization' => {
-            permissions => { $permission_module => '1' },
-        },
+        'x-koha-authorization' => { permissions => { $permission_module => '1' }, },
     };
 
     # Extract path parameters from the route path

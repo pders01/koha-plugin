@@ -161,9 +161,10 @@ sub run_init {
     };
 
     if ( !$ok ) {
-        l( 'error', $@ );
+        l( 'error',   $@ );
         l( 'warning', "cleaning up $path" );
         remove_tree("$path");
+
         # Also remove the base module file if it was created outside the dir
         my $base_file = _base_module_path( $path, $components->@[ $CONST->{'INDEX_PROJECT'} ] );
         unlink $base_file if -e $base_file;

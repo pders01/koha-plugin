@@ -43,8 +43,8 @@ subtest 'validate_metadata succeeds with valid data' => sub {
         description      => 'A test plugin',
         date_authored    => '2025-01-01',
         date_updated     => '2025-06-01',
-        minimum_version => '22.11',
-        maximum_version => '25.05',
+        minimum_version  => '22.11',
+        maximum_version  => '25.05',
         release_filename => 'example-test',
         static_dir_name  => 'static',
     };
