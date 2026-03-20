@@ -273,7 +273,79 @@ sub _add_api_route {
 
     l( 'info', "added $method $route_path -> $mojo_to" );
 
+    # Generate controller file if needed
+    _ensure_controller( $mojo_to, $operation_id );
+
     return 1;
+}
+
+sub _ensure_controller {
+    my ( $mojo_to, $operation_id ) = @_;
+
+    # Parse "TLD::Org::Project::FooController#bar"
+    my ( $class, $method_name ) = split /[#]/smx, $mojo_to, 2;
+    $method_name //= $operation_id;
+
+    # e.g. Koha/Plugin/TLD/Org/Project/FooController.pm
+    my $controller_path = path( join( q{/}, 'Koha', 'Plugin', split( /::/smx, $class ) ) . '.pm' );
+
+    if ( $controller_path->exists ) {
+        my $content = $controller_path->slurp_utf8;
+        if ( $content !~ /sub\s+\Q$method_name\E\b/smx ) {
+            # Append method stub before the final 1;
+            my $stub = _method_stub($method_name);
+            $content =~ s/^(1;)$/$stub\n$1/smx;
+            $controller_path->spew_utf8($content);
+            l( 'info', "added method stub '$method_name' to $controller_path" );
+        }
+        return 1;
+    }
+
+    # Create new controller
+    $controller_path->parent->mkpath;
+    my $package = "Koha::Plugin::$class";
+    $controller_path->spew_utf8( _controller_template( $package, $method_name ) );
+    l( 'info', "created controller $controller_path" );
+
+    return 1;
+}
+
+sub _controller_template {
+    my ( $package, $method_name ) = @_;
+
+    return <<"CONTROLLER";
+package $package;
+
+use Modern::Perl;
+
+use Mojo::Base 'Mojolicious::Controller';
+
+=head1 API
+
+=head2 Methods
+
+=head3 $method_name
+
+=cut
+
+@{[ _method_stub($method_name) ]}
+1;
+CONTROLLER
+}
+
+sub _method_stub {
+    my ($method_name) = @_;
+
+    return <<"STUB";
+sub $method_name {
+    my \$c = shift->openapi->valid_input or return;
+
+    return \$c->render(
+        status  => 200,
+        openapi => {},
+    );
+}
+STUB
 }
 
 1;
