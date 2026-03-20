@@ -231,43 +231,60 @@ sub _add_api_route {
         ? "${tld}::${org}::${project}::${controller}"
         : "${tld}::${org}::${project}::DefaultController#${operation_id}";
 
-    my $route = {
-        "x-mojo-to" => $mojo_to,
-        operationId => $operation_id,
-        tags        => [$project],
-        produces    => ['application/json'],
-        responses   => {
-            '200' => {
-                description => $description,
-                schema      => { type => 'object' },
-            },
-            '404' => {
-                description => 'Not found',
-                schema      => {
-                    type       => 'object',
-                    properties => {
-                        error => {
-                            description => 'Error message',
-                            type        => 'string',
-                        },
-                    },
-                },
-            },
-            '500' => {
-                description => 'Internal error',
-                schema      => {
-                    type       => 'object',
-                    properties => {
-                        error => {
-                            description => 'Error message',
-                            type        => 'string',
-                        },
-                    },
-                },
-            },
-        },
-        'x-koha-authorization' => { permissions => { $permission_module => '1' }, },
+    my $error_schema = {
+        type       => 'object',
+        properties => { error => { description => 'Error message', type => 'string' }, },
     };
+
+    # Method-specific response codes and schemas
+    my %method_config = (
+        get    => { success_code => '200', response_schema => { type => 'object' } },
+        post   => { success_code => '201', response_schema => { type => 'object' } },
+        put    => { success_code => '200', response_schema => { type => 'object' } },
+        patch  => { success_code => '200', response_schema => { type => 'object' } },
+        delete => { success_code => '204', response_schema => undef },
+    );
+
+    my $config       = $method_config{$method};
+    my $success_code = $config->{success_code};
+
+    # List endpoints (no path params + GET) return arrays
+    my $is_list = ( $method eq 'get' && $route_path !~ /\{/smx );
+    if ($is_list) {
+        $config->{response_schema} = {
+            type  => 'array',
+            items => { type => 'object' },
+        };
+    }
+
+    my %responses = (
+        $success_code => {
+            description => $description,
+            ( $config->{response_schema} ? ( schema => $config->{response_schema} ) : () ),
+        },
+        '403' => { description => 'Access forbidden', schema => $error_schema },
+        '500' => { description => 'Internal error',   schema => $error_schema },
+    );
+
+    # Add 404 for single-resource endpoints
+    if ( !$is_list && $method ne 'post' ) {
+        $responses{'404'} = { description => 'Not found', schema => $error_schema };
+    }
+
+    my $route = {
+        "x-mojo-to"            => $mojo_to,
+        operationId            => $operation_id,
+        summary                => $description,
+        tags                   => [$project],
+        produces               => ['application/json'],
+        responses              => \%responses,
+        'x-koha-authorization' => { permissions => { $permission_module => '1' } },
+    };
+
+    # POST/PUT/PATCH accept JSON bodies
+    if ( $method =~ /^(post|put|patch)$/smx ) {
+        $route->{consumes} = ['application/json'];
+    }
 
     # Extract path parameters from the route path
     my @path_params;
@@ -353,8 +370,6 @@ use Try::Tiny qw( catch try );
 
 =head2 Methods
 
-=head3 $method_name
-
 =cut
 
 @{[ _method_stub($method_name) ]}
@@ -365,16 +380,36 @@ CONTROLLER
 sub _method_stub {
     my ($method_name) = @_;
 
+    # Method-specific response patterns matching Koha conventions
+    my %responses = (
+        add => <<'ADD',
+        return $c->render(
+            status  => 201,
+            openapi => {},
+        );
+ADD
+        delete => <<'DELETE',
+        return $c->render_resource_deleted;
+DELETE
+    );
+
+    my $response = $responses{$method_name} // <<'DEFAULT';
+        return $c->render(
+            status  => 200,
+            openapi => {},
+        );
+DEFAULT
+
     return <<"STUB";
+=head3 $method_name
+
+=cut
+
 sub $method_name {
     my \$c = shift->openapi->valid_input or return;
 
     return try {
-        return \$c->render(
-            status  => 200,
-            openapi => {},
-        );
-    }
+$response    }
     catch {
         \$c->unhandled_exception(\$_);
     };
