@@ -29,6 +29,7 @@ my %COMPONENTS = (
     node        => \&_add_node,
     'api-route' => \&_add_api_route,
     migration   => \&_add_migration,
+    hook        => \&_add_hook,
 );
 
 sub run_add {
@@ -478,6 +479,110 @@ SQL
     if ( $next_number == 1 ) {
         l( 'info', 'this is your first migration — see install/upgrade hooks for integration patterns' );
         l( 'info', 'consider using LMSCloud MigrationHelper: github.com/LMSCloudPaulD/koha-plugin-lmscloud-util' );
+    }
+
+    return 1;
+}
+
+sub _add_hook {
+    my (%opts)     = @_;
+    my $metadata   = metadata_from_env();
+    my $components = [ split /::/smx, $metadata->{name} // q{} ];
+
+    if ( @{$components} != 5 ) {
+        l( 'error', 'plugin name must be set in config before adding hooks' );
+        return;
+    }
+
+    # Discover available hooks from templates
+    my $hooks_dir     = asset_dir('templates/hooks');
+    my @available     = map {s{.*/|\.pl$}{}gr} glob "$hooks_dir/*.pl";
+    my %available_set = map { $_ => 1 } @available;
+
+    my $hook_name = resolve( $opts{type}, sub { choose( [ sort @available ], { prompt => 'Select hook to add:' } ) } );
+
+    if ( !$hook_name || !$available_set{$hook_name} ) {
+        l( 'error', "unknown hook: $hook_name" );
+        return;
+    }
+
+    # Find the base module
+    my $base_module = path( join( q{/}, $components->@* ) . '.pm' );
+    if ( !$base_module->exists ) {
+        l( 'error', "base module not found: $base_module" );
+        return;
+    }
+
+    # Check if the hook already exists
+    my $content = $base_module->slurp_utf8;
+    if ( $content =~ /sub\s+\Q$hook_name\E\b/smx ) {
+        l( 'warning', "$hook_name is already implemented in $base_module" );
+        return 1;
+    }
+
+    # Render the hook template through TT
+    my $project = $components->@[4];
+    my $tt      = Template->new( { INCLUDE_PATH => $hooks_dir } );
+    my $rendered;
+    $tt->process( "$hook_name.pl", { project => $project }, \$rendered, );
+    if ( $tt->error ) {
+        l( 'error', 'template processing failed: ' . $tt->error );
+        return;
+    }
+
+    # Insert before the final 1;
+    $content =~ s/^(1;\s*)$/\n$rendered\n$1/smx;
+    $base_module->spew_utf8($content);
+
+    l( 'info', "added hook '$hook_name' to $base_module" );
+
+    # If this is a UI hook, also generate the template file
+    my %ui_hooks = map { $_ => 1 } qw(admin configure report tool);
+    if ( $ui_hooks{$hook_name} ) {
+        my $plugin_dir = path( join q{/}, $components->@* );
+        my $source     = $hook_name eq 'configure' ? 'sites/configure.tt' : 'sites/action.tt';
+        my $dest       = "$plugin_dir/$hook_name.tt";
+        if ( !-e $dest ) {
+            my $action_tt = Template->new(
+                {   INCLUDE_PATH => asset_dir('templates'),
+                    START_TAG    => '<%',
+                    END_TAG      => '%>',
+                    FILTERS      => {
+                        capitalize => sub {
+                            my $text = shift;
+                            $text =~ s/^(\w)/\U$1/smx;
+                            return $text;
+                        }
+                    }
+                }
+            );
+            $action_tt->process( $source, { project => $project, action => $hook_name }, $dest );
+            l( 'info', "created $dest" ) unless $action_tt->error;
+        }
+    }
+
+    # If this is the api hook, create openapi.json
+    if ( $hook_name eq 'api_namespace' || $hook_name eq 'api_routes' ) {
+        my $openapi = path( join( q{/}, $components->@* ) . '/openapi.json' );
+        if ( !$openapi->exists ) {
+            $openapi->parent->mkpath;
+            $openapi->spew_utf8("{}\n");
+            l( 'info', "created openapi.json — run 'koha-plugin add api-route' to add routes" );
+        }
+    }
+
+    # If this is static_routes, copy staticapi.json
+    if ( $hook_name eq 'static_routes' ) {
+        my $plugin_dir = path( join q{/}, $components->@* );
+        my $dest       = path("$plugin_dir/staticapi.json");
+        if ( !$dest->exists ) {
+            my $src = path( asset_dir('templates/staticapi.json') );
+            if ( $src->exists ) {
+                $dest->parent->mkpath;
+                $src->copy($dest);
+                l( 'info', 'created staticapi.json' );
+            }
+        }
     }
 
     return 1;

@@ -232,6 +232,59 @@ subtest 'add migration non-interactive' => sub {
     chdir $orig or die;
 };
 
+# --- add hook (non-interactive) ---
+
+subtest 'add hook non-interactive' => sub {
+    my $orig = _setup_plugin();
+    local $ENV{KOHA_PLUGIN_ROOT} = $PROJECT_ROOT;
+
+    # Create a minimal base module to add hooks to
+    require Path::Tiny;
+    Path::Tiny::path('Koha/Plugin/Com/Test/Add.pm')->spew_utf8(<<'MODULE');
+package Koha::Plugin::Com::Test::Add v1.0.0;
+use base qw(Koha::Plugins::Base);
+1;
+MODULE
+
+    my $result = _quiet { run_add( 'hook', type => 'cronjob_nightly' ) };
+    ok( $result, 'add hook returns true' );
+
+    my $content = Path::Tiny::path('Koha/Plugin/Com/Test/Add.pm')->slurp_utf8;
+    like( $content, qr/sub cronjob_nightly/,    'hook method added' );
+    like( $content, qr/=head3 cronjob_nightly/, 'hook POD added' );
+    like( $content, qr/1;\s*\z/smx,             'file still ends with 1;' );
+
+    # Adding same hook again should not duplicate
+    my $result2 = _quiet { run_add( 'hook', type => 'cronjob_nightly' ) };
+    ok( $result2, 'duplicate hook returns true (no-op)' );
+    my @matches = ( $content =~ /sub cronjob_nightly/g );
+    is( scalar @matches, 1, 'hook not duplicated' );
+
+    chdir $orig or die;
+};
+
+subtest 'add hook generates UI template for configure' => sub {
+    my $orig = _setup_plugin();
+    local $ENV{KOHA_PLUGIN_ROOT} = $PROJECT_ROOT;
+
+    require Path::Tiny;
+    Path::Tiny::path('Koha/Plugin/Com/Test/Add.pm')->spew_utf8(<<'MODULE');
+package Koha::Plugin::Com::Test::Add v1.0.0;
+use base qw(Koha::Plugins::Base);
+1;
+MODULE
+
+    my $result = _quiet { run_add( 'hook', type => 'configure' ) };
+    ok( $result,                                    'add hook configure returns true' );
+    ok( -e 'Koha/Plugin/Com/Test/Add/configure.tt', 'configure.tt created' );
+
+    my $content = Path::Tiny::path('Koha/Plugin/Com/Test/Add.pm')->slurp_utf8;
+    like( $content, qr/sub configure/, 'configure method added' );
+    like( $content, qr/store_data/,    'configure has store_data pattern' );
+
+    chdir $orig or die;
+};
+
 # --- error cases ---
 
 subtest 'add unknown component' => sub {
