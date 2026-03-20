@@ -1,9 +1,11 @@
 package Koha::Plugin::[% tld %]::[% org %]::[% project %] v[% version %];
 
+use Modern::Perl;
+
 use base qw(Koha::Plugins::Base);
 
 [% IF api || static %]
-use JSON qw( decode_json );
+use Mojo::JSON qw( decode_json );
 [% END %]
 
 our $metadata = {
