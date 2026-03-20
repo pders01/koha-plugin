@@ -108,8 +108,7 @@ sub main() {
     my $hooks = [
         choose(
             $HOOKS,
-            {
-                color => 2,
+            {   color => 2,
                 info  =>
                     q{Please choose the hooks you'd like to use in your plugin. Some are grouped: api, opac_online_payment.},
                 prompt => q{Select as many as you like with SPACE, then hit ENTER. :)}
@@ -119,10 +118,10 @@ sub main() {
 
     $tt->process(
         '[a].pm.tt',
-        {
-            c        => $components->@[ $CONST->{'INDEX_TLD'} ],
+        {   c        => $components->@[ $CONST->{'INDEX_TLD'} ],
             b        => $components->@[ $CONST->{'INDEX_ORG'} ],
             a        => $components->@[ $CONST->{'INDEX_PROJECT'} ],
+            version  => $metadata->{version} // '0.0.1',
             metadata => stringify_metadata($metadata),
             ( $hooks->@* ? map { $_ => 1 } $hooks->@* : () )
         },
@@ -163,7 +162,8 @@ sub _prompt_for_metadata($metadata) {    ## no critic qw(Subroutines::ProhibitEx
         );
         if ( defined $name && $name =~ $name_pattern ) {
             $metadata->{name} = $name;
-        } else {
+        }
+        else {
             l( 'warning', 'Invalid name; expected Koha::Plugin::<TLD>::<ORG>::<PROJECT>' );
             next;
         }

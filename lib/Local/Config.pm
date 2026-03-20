@@ -114,7 +114,7 @@ sub migrate_from_dotenv {
 
     save_config( $config, $target );
     l( 'info', "migrated .env to $target" );
-    l( 'info', 'you can now remove .env and update your justfile' );
+    l( 'info', 'you can now remove .env and update your build scripts' );
 
     return $target;
 }
@@ -132,6 +132,7 @@ sub _parse_dotenv {
         next if $line =~ /^\s*$/;
         if ( $line =~ /^\s*PLUGIN_(\w+)=(.*)$/smx ) {
             my ( $key, $value ) = ( lc $1, $2 );
+
             # Strip surrounding quotes
             $value =~ s/^["']|["']$//g;
             $config{$key} = $value;
