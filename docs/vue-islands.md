@@ -306,12 +306,21 @@ setup(props) {
 trigger CSP violations. As of March 2026, Koha's CSP is report-only, so
 scripts execute but violations are logged.
 
-**No SSE or WebSockets in practice.** Koha runs on Starman, a pre-fork
-blocking server. Each SSE/WS connection permanently ties up a worker
-process, and `Mojo::IOLoop` timers spin without a proper event loop
-(causing 100% CPU). Use polling instead — a 3-second interval is
-visually indistinguishable from real-time for most use cases. See
-`examples/circ-feed` for a working polling implementation.
+**SSE and WebSockets require care.** Koha runs on Starman, a pre-fork
+blocking server. `Mojo::IOLoop` timers do not work inside Starman
+controllers (no event loop — the timer spins at 100% CPU). However,
+SSE is not impossible:
+
+- A simple `sleep`-based loop (`while (1) { sleep 2; write; flush }`)
+  works correctly but ties up one Starman worker per connection. For
+  2-3 concurrent viewers this is fine; for many, it's not.
+- A separate async service (Hypnotoad or Twiggy) dedicated to SSE/WS
+  connections can run alongside Starman on a different port. This
+  scales but adds deployment complexity.
+
+For most plugin use cases, **polling is the pragmatic choice** — a
+3-second interval is visually indistinguishable from real-time. See
+`examples/circ-feed` for a working implementation.
 
 **Custom element names must contain a hyphen.** This is a web component
 spec requirement. Use names like `plugin-my-widget`.
