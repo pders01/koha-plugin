@@ -1,7 +1,3 @@
-
-=pod
-
-
 =head3 api_namespace
 
 Context: Define the API namespace for the plugin (subdomain-like component).

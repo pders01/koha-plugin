@@ -1,6 +1,3 @@
-=pod
-
-
 =head3 auth_client_get_user
 
 Context: Map an authenticated external user to a Koha patron or mutate patron

@@ -1,6 +1,3 @@
-=pod
-
-
 =head3 before_orderline_create
 
 Context: Prior to creating an orderline from a MARC record file.

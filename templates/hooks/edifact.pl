@@ -1,6 +1,3 @@
-=pod
-
-
 =head3 edifact
 
 Context: Add a vendor to the EDIFACT module.

@@ -1,6 +1,3 @@
-=pod
-
-
 =head3 ill_availability_services
 
 Context: Intercept ILL request creation; search and return potential relevant

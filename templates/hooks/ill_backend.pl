@@ -1,6 +1,3 @@
-=pod
-
-
 =head3 ill_backend
 
 Context: Identify this plugin as an ILL backend by returning a backend name.

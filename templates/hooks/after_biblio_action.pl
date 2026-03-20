@@ -1,6 +1,3 @@
-=pod
-
-
 =head3 after_biblio_action
 
 Context: Post-CRUD biblio hook. Use to enqueue background jobs or notify external systems.

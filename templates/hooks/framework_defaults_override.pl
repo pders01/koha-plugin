@@ -1,6 +1,3 @@
-=pod
-
-
 =head3 framework_defaults_override
 
 Context: Fine-grained defaults handling for biblio framework defaults.

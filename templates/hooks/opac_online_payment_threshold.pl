@@ -1,6 +1,3 @@
-=pod
-
-
 =head3 opac_online_payment_threshold
 
 Context: Minimum allowed OPAC payment. Deny payments below this number.

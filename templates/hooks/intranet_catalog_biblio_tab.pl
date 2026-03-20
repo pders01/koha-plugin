@@ -1,5 +1,3 @@
-=pod
-
 =head3 intranet_catalog_biblio_tab
 
 This subroutine is a plugin hook used to add new tabs to the staff record details page. 

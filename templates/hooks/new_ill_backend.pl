@@ -1,6 +1,3 @@
-=pod
-
-
 =head3 new_ill_backend
 
 Context: Return the ILL backend class to use. Can be the plugin itself or a

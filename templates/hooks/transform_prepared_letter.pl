@@ -1,5 +1,3 @@
-=pod
-
 =head3 transform_prepared_letter
 
 This subroutine is a plugin hook used to modify prepared slips and notices.

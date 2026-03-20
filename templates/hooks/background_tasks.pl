@@ -1,6 +1,3 @@
-
-=pod
-
 =head3 background_tasks
 
 This subroutine is a plugin hook used to register new background job types.

@@ -1,6 +1,3 @@
-
-=pod
-
 =head3 opac_online_payment_begin
 
 This subroutine triggers the beginning of the online payment process in the OPAC.

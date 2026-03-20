@@ -1,6 +1,3 @@
-=pod
-
-
 =head3 patron_consent_type
 
 Context: Add a patron consent type for OPAC account page (Your consents tab).

@@ -1,6 +1,3 @@
-=pod
-
-
 =head3 overwrite_calc_fine
 
 Context: Customize calculation for graduated fines.

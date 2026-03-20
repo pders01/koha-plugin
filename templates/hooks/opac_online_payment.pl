@@ -1,6 +1,3 @@
-
-=pod
-
 =head3 opac_online_payment
 
 This subroutine checks if the plugin can process online payments and if this feature 

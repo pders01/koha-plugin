@@ -1,6 +1,3 @@
-=pod
-
-
 =head3 patron_generate_userid
 
 Context: Generate a userid when creating patrons.

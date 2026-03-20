@@ -1,6 +1,3 @@
-=pod
-
-
 =head3 check_password
 
 Context: Validate password strength when a password is created or updated.

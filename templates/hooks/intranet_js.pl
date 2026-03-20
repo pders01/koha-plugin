@@ -1,7 +1,3 @@
-
-=pod
-
-
 =head3 intranet_js
 
 This subroutine allows the plugin to inject custom JavaScript into the staff intranet interface.

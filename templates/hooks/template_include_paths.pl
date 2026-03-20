@@ -1,6 +1,3 @@
-=pod
-
-
 =head3 template_include_paths
 
 Context: Add Template::Toolkit INCLUDE_PATH entries for plugin templates.

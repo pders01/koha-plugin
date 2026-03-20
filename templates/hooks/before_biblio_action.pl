@@ -1,6 +1,3 @@
-=pod
-
-
 =head3 before_biblio_action
 
 Context: Pre-CRUD biblio hook. Return a value to influence or block the operation.

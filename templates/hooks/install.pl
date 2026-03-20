@@ -1,7 +1,3 @@
-
-=pod
-
-
 =head3 install
 
 This is the 'install' method. Any database tables or other setup that should

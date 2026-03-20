@@ -1,6 +1,3 @@
-=pod
-
-
 =head3 intranet_cover_images
 
 Context: Provide cover images for the staff interface.

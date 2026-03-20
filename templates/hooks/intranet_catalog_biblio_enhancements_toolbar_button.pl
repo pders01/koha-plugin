@@ -1,6 +1,3 @@
-
-=pod
-
 =head3 intranet_catalog_biblio_enhancements_toolbar_button
 
 This subroutine allows the plugin to add new HTML elements to the catalogue toolbar 

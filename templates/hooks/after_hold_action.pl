@@ -1,6 +1,3 @@
-=pod
-
-
 =head3 after_hold_action
 
 Context: Triggered on hold status changes; C<$action> indicates context (fill,

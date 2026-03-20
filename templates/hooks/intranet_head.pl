@@ -1,7 +1,3 @@
-
-=pod
-
-
 =head3 intranet_head
 
 This subroutine allows the plugin to add custom CSS to the staff intranet interface.

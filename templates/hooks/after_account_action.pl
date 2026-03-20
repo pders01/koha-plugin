@@ -1,6 +1,3 @@
-=pod
-
-
 =head3 after_account_action
 
 Context: Called after account-related actions are performed.

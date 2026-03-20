@@ -1,6 +1,3 @@
-=pod
-
-
 =head3 notices_content
 
 Context: Add variables to the notices context before templates are processed.

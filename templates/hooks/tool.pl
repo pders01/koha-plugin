@@ -1,6 +1,3 @@
-
-=pod
-
 =head3 tool
 
 The existence of a C<tool> subroutine means the plugin is capable of running a tool. 

@@ -1,6 +1,3 @@
-
-=pod
-
 =head2 admin
 
 The existence of an 'admin' subroutine means the plugin has some functionality that

@@ -1,7 +1,3 @@
-
-=pod
-
-
 =head3 configure
 
 This subroutine provides the plugin's configuration interface.

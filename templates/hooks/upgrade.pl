@@ -1,6 +1,3 @@
-
-=pod
-
 =head3 upgrade
 
 This subroutine is triggered when a newer version of the plugin is installed over an existing older version.

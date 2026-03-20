@@ -1,7 +1,3 @@
-
-=pod
-
-
 =head3 static_routes
 
 This subroutine returns static API routes from a predefined JSON specification file.

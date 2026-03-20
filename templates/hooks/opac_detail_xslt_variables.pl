@@ -1,7 +1,3 @@
-
-=pod
-
-
 =head3 opac_detail_xslt_variables
 
 This subroutine is a plugin hook used to inject custom variables into the OPAC detail XSLT.

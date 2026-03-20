@@ -1,6 +1,3 @@
-=pod
-
-
 =head3 after_recall_action
 
 Context: Called after recall-related actions are performed.

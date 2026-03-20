@@ -1,6 +1,3 @@
-=pod
-
-
 =head3 after_circ_action
 
 Context: Called at the end of AddRenewal, AddIssue and AddReturn.

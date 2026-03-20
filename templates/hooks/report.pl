@@ -1,6 +1,3 @@
-
-=pod
-
 =head3 report
 
 The existence of a C<report> subroutine means the plugin is capable of running a report.

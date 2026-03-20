@@ -1,6 +1,3 @@
-
-=pod
-
 =head3 item_barcode_transform
 
 This subroutine is a plugin hook that transforms input strings wherever item barcodes are scanned.

@@ -1,6 +1,3 @@
-
-=pod
-
 =head3 before_send_messages
 
 This subroutine is a plugin hook that runs right before the message queue is processed

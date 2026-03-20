@@ -1,7 +1,3 @@
-
-=pod
-
-
 =head3 api_routes
 
 This subroutine returns valid OpenAPI 2.0 paths serialized as a hash reference.

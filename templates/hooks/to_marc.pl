@@ -1,6 +1,3 @@
-
-=pod
-
 =head3 to_marc
 
 The existence of a C<to_marc> subroutine means the plugin is capable of converting a file to MARC format for use with the "Stage MARC records for import" tool.

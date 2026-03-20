@@ -1,7 +1,3 @@
-
-=pod
-
-
 =head3 opac_head
 
 This subroutine allows the plugin to inject custom CSS into the OPAC.

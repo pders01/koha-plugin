@@ -1,6 +1,3 @@
-
-=pod
-
 =head3 patron_barcode_transform
 
 This subroutine is a plugin hook that transforms input strings wherever patron barcodes are scanned.

@@ -1,5 +1,3 @@
-=pod
-
 =head3 cronjob_nightly
 
 This subroutine is a plugin hook that is triggered by a nightly cron job.

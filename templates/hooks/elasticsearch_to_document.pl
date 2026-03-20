@@ -1,6 +1,3 @@
-=pod
-
-
 =head3 elasticsearch_to_document
 
 Context: Modify the document sent to Elasticsearch post marc_records_to_documents().

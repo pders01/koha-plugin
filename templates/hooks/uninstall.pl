@@ -1,7 +1,3 @@
-
-=pod
-
-
 =head3 uninstall
 
 This subroutine is run just before the plugin files are deleted when a plugin is uninstalled.

@@ -1,6 +1,3 @@
-=pod
-
-
 =head3 after_item_action
 
 Context: Post-CRUD item hook. Use to trigger side-effects (async recommended).

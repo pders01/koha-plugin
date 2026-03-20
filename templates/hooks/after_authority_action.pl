@@ -1,6 +1,3 @@
-=pod
-
-
 =head3 after_authority_action
 
 Context: Called after AddAuthority, ModAuthority, or DelAuthority.
