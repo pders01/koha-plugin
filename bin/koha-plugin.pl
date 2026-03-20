@@ -80,6 +80,7 @@ Commands:
         action                    UI page template (admin, configure, report, tool)
         node                      Node.js project (package.json + src/)
         api-route                 OpenAPI route + controller stub
+        migration                 Numbered SQL migration file
     increment [options]         Increment version (patch, minor, major)
     package                     Create a .kpz file
     clean                       Remove Koha/ directory and package.json
@@ -121,6 +122,7 @@ sub _cmd_add {
         l( 'info',  '  action     - UI page template (admin, configure, report, tool)' );
         l( 'info',  '  node       - Node.js project (package.json + src/)' );
         l( 'info',  '  api-route  - OpenAPI route + controller stub' );
+        l( 'info',  '  migration  - Numbered SQL migration file' );
         exit 1;
     }
     run_add($component);

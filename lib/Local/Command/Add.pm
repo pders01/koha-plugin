@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use Carp           qw( croak );
+use DateTime       ();
 use IPC::Open3     qw( open3 );
 use JSON           qw( decode_json );
 use Path::Tiny     qw( cwd path );
@@ -27,6 +28,7 @@ my %COMPONENTS = (
     action      => \&_add_action,
     node        => \&_add_node,
     'api-route' => \&_add_api_route,
+    migration   => \&_add_migration,
 );
 
 sub run_add {
@@ -347,6 +349,70 @@ sub $method_name {
     );
 }
 STUB
+}
+
+sub _add_migration {
+    my $metadata   = metadata_from_env();
+    my $components = [ split /::/smx, $metadata->{name} // q{} ];
+
+    if ( @{$components} != 5 ) {
+        l( 'error', 'plugin name must be set in config before adding migrations' );
+        return;
+    }
+
+    my $plugin_path    = path( join q{/}, $components->@* );
+    my $migrations_dir = path("$plugin_path/migrations");
+    $migrations_dir->mkpath;
+
+    # Determine next migration number
+    my @existing = sort glob "$migrations_dir/*.sql";
+    my $next_number = 1;
+    if (@existing) {
+        my ($last_file) = reverse @existing;
+        my ($last_name) = $last_file =~ m{/(\d+)_}smx;
+        $next_number = ( $last_name // 0 ) + 1;
+    }
+
+    my $term = Term::ReadLine->new('koha-plugin add migration');
+
+    my $description = $term->get_reply(
+        prompt  => 'Migration description (e.g. create_widgets_table):',
+        default => q{},
+    );
+    if ( !$description ) {
+        l( 'error', 'description is required' );
+        return;
+    }
+
+    # Sanitize for filename
+    $description =~ s/[^a-zA-Z0-9_]/_/g;
+
+    my $filename = sprintf '%03d_%s.sql', $next_number, $description;
+    my $filepath = path("$migrations_dir/$filename");
+
+    $filepath->spew_utf8(<<"SQL");
+-- Migration $next_number: $description
+-- Created: @{[ DateTime->now->ymd ]}
+
+-- Use {{table_name}} placeholders for table names if using MigrationHelper.
+-- Example:
+-- CREATE TABLE IF NOT EXISTS {{my_table}} (
+--     id INT AUTO_INCREMENT PRIMARY KEY,
+--     name VARCHAR(255) NOT NULL,
+--     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+-- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+SQL
+
+    l( 'info', "created $filepath" );
+
+    # Check if this is the first migration — suggest updating install/upgrade hooks
+    if ( $next_number == 1 ) {
+        l( 'info', 'this is your first migration — see install/upgrade hooks for integration patterns' );
+        l( 'info', 'consider using LMSCloud MigrationHelper: github.com/LMSCloudPaulD/koha-plugin-lmscloud-util' );
+    }
+
+    return 1;
 }
 
 1;

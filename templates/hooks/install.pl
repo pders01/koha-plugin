@@ -43,7 +43,7 @@ Boolean (true on success, false on failure)
 sub install() {
     my ( $self, $args ) = @_;
 
-    # Example: create a custom table
+    # Option 1: Inline DDL
     # my $dbh = C4::Context->dbh;
     # $dbh->do(q{
     #     CREATE TABLE IF NOT EXISTS plugin_example (
@@ -51,6 +51,17 @@ sub install() {
     #         name VARCHAR(255) NOT NULL
     #     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
     # });
+
+    # Option 2: Use MigrationHelper with SQL files in migrations/
+    # See: github.com/LMSCloudPaulD/koha-plugin-lmscloud-util
+    # Create migration files with: koha-plugin add migration
+    #
+    # use Koha::Plugin::Com::LMSCloud::Util::MigrationHelper;
+    # my $helper = Koha::Plugin::Com::LMSCloud::Util::MigrationHelper->new({
+    #     bundle_path        => $self->bundle_path,
+    #     table_name_mappings => { my_table => 'plugin_mytable' },
+    # });
+    # return $helper->install({ plugin => $self });
 
     return 1;
 }
