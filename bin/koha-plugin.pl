@@ -75,8 +75,11 @@ koha-plugin $VERSION - Koha Plugin Builder
 Usage: koha-plugin <command> [arguments]
 
 Commands:
-    init                        Initialize a new Koha plugin
-    add <component>             Add a component (action, node, api-route)
+    init                        Initialize a new Koha plugin (interactive)
+    add <component>             Add a component to your plugin:
+        action                    UI page template (admin, configure, report, tool)
+        node                      Node.js project (package.json + src/)
+        api-route                 OpenAPI route + controller stub
     increment [options]         Increment version (patch, minor, major)
     package                     Create a .kpz file
     clean                       Remove Koha/ directory and package.json
@@ -115,7 +118,9 @@ sub _cmd_add {
     my ($component) = @_;
     if ( !$component ) {
         l( 'error', 'usage: koha-plugin add <component>' );
-        l( 'info',  'components: action, node, api-route' );
+        l( 'info',  '  action     - UI page template (admin, configure, report, tool)' );
+        l( 'info',  '  node       - Node.js project (package.json + src/)' );
+        l( 'info',  '  api-route  - OpenAPI route + controller stub' );
         exit 1;
     }
     run_add($component);
