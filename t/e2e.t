@@ -136,8 +136,8 @@ subtest 'full plugin lifecycle' => sub {
     like( $content, qr/return 1;/, 'install returns 1 (success)' );
 
     # Verify JS/CSS hooks reference static files
-    like( $content, qr{/api/v1/contrib/E2E/static/dist/main\.js},  'intranet_js references static JS file' );
-    like( $content, qr{/api/v1/contrib/E2E/static/dist/main\.css}, 'opac_head references static CSS file' );
+    like( $content, qr{/api/v1/contrib/E2E/static/main\.js},  'intranet_js references static JS file' );
+    like( $content, qr{/api/v1/contrib/E2E/static/main\.css}, 'opac_head references static CSS file' );
 
     # Verify configure has store_data pattern
     like( $content, qr/store_data/,    'configure references store_data' );

@@ -893,19 +893,74 @@ sub _add_vue {
         l( 'info', 'created package.json' );
     }
 
-    # Print next steps
-    my $api_ns = lc $project;
+    # Auto-wire intranet_js hook with island registration
+    my $api_ns      = lc $project;
+    my $base_module = path( join( q{/}, $components->@* ) . '.pm' );
+
+    if ( $base_module->exists ) {
+        my $content    = $base_module->slurp_utf8;
+        my $js_snippet = _island_js_snippet( $api_ns, $component_name, $tag_name );
+
+        if ( $content =~ /sub \s+ intranet_js\b/smx ) {
+
+            # Append island registration to the intranet_js heredoc
+            if ( $content =~ s/(return \s* <<~'JS';)\n/$1\n$js_snippet\n/smx ) {
+                $base_module->spew_utf8($content);
+                l( 'info', "wired $tag_name into intranet_js" );
+            }
+            else {
+                l( 'warning', 'could not auto-wire intranet_js — add the registration manually' );
+            }
+        }
+        else {
+            l( 'info', 'intranet_js hook not found — adding it' );
+
+            # Use the hook mechanism to add it, then wire
+            run_add( 'hook', type => 'intranet_js' );
+
+            # Re-read and inject
+            $content = $base_module->slurp_utf8;
+            if ( $content =~ s/(return \s* <<~'JS';)\n/$1\n$js_snippet\n/smx ) {
+                $base_module->spew_utf8($content);
+                l( 'info', "wired $tag_name into intranet_js" );
+            }
+        }
+    }
+
     l( 'info', 'next steps:' );
-    l( 'info', "  1. npm install" );
+    l( 'info', '  1. npm install' );
     l( 'info', "  2. edit src/components/$component_name.vue" );
-    l( 'info', "  3. npm run build" );
-    l( 'info', "  4. register the island in your intranet_js hook:" );
-    l( 'info', "     registerIsland(\"$tag_name\", {" );
-    l( 'info', "       importFn: () => import(\"/api/v1/contrib/$api_ns/static/$component_name.js\")," );
-    l( 'info', "       config: { stores: [] }," );
-    l( 'info', "     });" );
+    l( 'info', '  3. npm run build' );
+    l( 'info', '  4. koha-plugin staticapi && koha-plugin ktd' );
 
     return 1;
+}
+
+sub _island_js_snippet {
+    my ( $api_ns, $component_name, $tag_name ) = @_;
+
+    return <<"SNIPPET";
+    <link rel="stylesheet" href="/api/v1/contrib/$api_ns/static/$component_name.css">
+    <script type="module">
+      const islandsSrc = document.querySelector("script[src*='islands.esm']")?.src;
+      if (islandsSrc) {
+        const { registerIsland, hydrate } = await import(islandsSrc);
+        registerIsland("$tag_name", {
+          importFn: async () => {
+            const mod = await import("/api/v1/contrib/$api_ns/static/$component_name.js");
+            return mod.default;
+          },
+          config: { stores: [] },
+        });
+        const main = document.querySelector(".main.container-fluid");
+        if (main) {
+          const el = document.createElement("$tag_name");
+          main.prepend(el);
+        }
+        hydrate();
+      }
+    </script>
+SNIPPET
 }
 
 sub _vue_sfc_template {
