@@ -16,7 +16,7 @@ use Term::UI       ();
 use Term::ReadLine ();
 
 use Local::Metadata qw( metadata_from_env );
-use Local::Util     qw( l asset_dir );
+use Local::Util     qw( l asset_dir resolve );
 
 use Exporter 'import';
 
@@ -69,7 +69,7 @@ sub _add_action {
     }
 
     my $metadata = metadata_from_env();
-    my $action   = $opts{type} // choose( [qw(admin configure report tool)] );
+    my $action   = resolve( $opts{type}, sub { choose( [qw(admin configure report tool)] ) } );
 
     my $cwd        = cwd;
     my $components = [ split /::/smx, $metadata->{name} ];
@@ -161,49 +161,49 @@ sub _add_api_route {
         $spec = decode_json( $spec_file->slurp_utf8 );
     }
 
-    my ( $route_path, $method, $operation_id, $controller, $permission_module, $description );
+    my $term = Term::ReadLine->new('koha-plugin add api-route');
 
-    if ( $opts{path} ) {
-
-        # Non-interactive mode
-        $route_path        = $opts{path};
-        $method            = lc( $opts{method} // 'get' );
-        $operation_id      = $opts{operation}   // $opts{operation_id};
-        $controller        = $opts{controller}  // q{};
-        $permission_module = $opts{permission}  // 'catalogue';
-        $description       = $opts{description} // "Result of $operation_id";
-    }
-    else {
-        # Interactive mode
-        my $term = Term::ReadLine->new('koha-plugin add api-route');
-
-        $route_path = $term->get_reply(
-            prompt  => 'Route path (e.g. /widgets or /widgets/{widget_id}):',
-            default => q{},
-        );
-
-        $method = lc( choose( [qw(get post put patch delete)], { prompt => 'HTTP method:' } ) // q{} );
-
-        $operation_id = $term->get_reply(
-            prompt  => 'Operation ID (e.g. listWidgets, getWidget):',
-            default => q{},
-        );
-
-        $controller = $term->get_reply(
-            prompt  => 'Controller class::method (e.g. WidgetController#list):',
-            default => q{},
-        );
-
-        $permission_module = $term->get_reply(
-            prompt  => 'Koha permission module (e.g. catalogue, borrowers, tools):',
-            default => 'catalogue',
-        );
-
-        $description = $term->get_reply(
-            prompt  => 'Response description:',
-            default => "Result of $operation_id",
-        );
-    }
+    my $route_path = resolve(
+        $opts{path},
+        sub {
+            $term->get_reply( prompt => 'Route path (e.g. /widgets or /widgets/{widget_id}):', default => q{} );
+        }
+    );
+    my $method = lc(
+        resolve(
+            $opts{method},
+            sub {
+                choose( [qw(get post put patch delete)], { prompt => 'HTTP method:' } );
+            }
+        ) // q{}
+    );
+    my $operation_id = resolve(
+        $opts{operation},
+        sub {
+            $term->get_reply( prompt => 'Operation ID (e.g. listWidgets, getWidget):', default => q{} );
+        }
+    );
+    my $controller = resolve(
+        $opts{controller},
+        sub {
+            $term->get_reply( prompt => 'Controller class::method (e.g. WidgetController#list):', default => q{} );
+        }
+    );
+    my $permission_module = resolve(
+        $opts{permission},
+        sub {
+            $term->get_reply(
+                prompt  => 'Koha permission module (e.g. catalogue, borrowers, tools):',
+                default => 'catalogue'
+            );
+        }
+    );
+    my $description = resolve(
+        $opts{description},
+        sub {
+            $term->get_reply( prompt => 'Response description:', default => "Result of $operation_id" );
+        }
+    );
 
     if ( !$route_path || $route_path !~ m{^/}smx ) {
         l( 'error', 'route path must start with /' );
@@ -394,17 +394,13 @@ sub _add_migration {
         $next_number = ( $last_name // 0 ) + 1;
     }
 
-    my $description;
-    if ( $opts{description} ) {
-        $description = $opts{description};
-    }
-    else {
-        my $term = Term::ReadLine->new('koha-plugin add migration');
-        $description = $term->get_reply(
-            prompt  => 'Migration description (e.g. create_widgets_table):',
-            default => q{},
-        );
-    }
+    my $description = resolve(
+        $opts{description},
+        sub {
+            my $term = Term::ReadLine->new('koha-plugin add migration');
+            $term->get_reply( prompt => 'Migration description (e.g. create_widgets_table):', default => q{} );
+        }
+    );
     if ( !$description ) {
         l( 'error', 'description is required' );
         return;

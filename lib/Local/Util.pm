@@ -9,7 +9,7 @@ use Term::ANSIColor qw( colored );
 
 use Exporter 'import';
 
-our @EXPORT_OK = qw( l asset_dir );
+our @EXPORT_OK = qw( l asset_dir resolve );
 
 ## no critic qw(ValuesAndExpressions::RequireInterpolationOfMetachars)
 
@@ -40,6 +40,13 @@ sub asset_dir {
     return defined $subdir
         ? File::Spec->catdir( $base, $subdir )
         : $base;
+}
+
+sub resolve {
+    my ( $value, $fallback ) = @_;
+
+    return $value if defined $value;
+    return ref $fallback eq 'CODE' ? $fallback->() : $fallback;
 }
 
 1;
