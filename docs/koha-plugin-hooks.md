@@ -1,113 +1,143 @@
-### Koha plugin hooks: coverage and usage
+## Koha Plugin Hooks Reference
 
-This document summarizes Koha’s plugin hooks and whether the `koha-plugin` scaffold provides a template for each. Use it to decide which hooks your plugin can implement out of the box and where you may need to add templates.
+All hooks listed below have templates in `templates/hooks/` and are selectable during `koha-plugin init`. Hooks are organized by category, matching the order shown in the selection UI.
 
-Legend
+### Lifecycle
 
-- **Supported**: A corresponding template exists under `templates/hooks/` (or related) in this scaffold
-- **Missing**: No template yet; add if required by your plugin
+| Hook | Description | Returns |
+|------|-------------|---------|
+| `install` | One-time setup on first install (e.g., create tables) | Boolean (1 = success) |
+| `upgrade` | Run on version upgrade (e.g., ALTER TABLE) | Boolean (1 = success) |
+| `uninstall` | Cleanup before removal (e.g., drop tables) | Boolean |
 
-#### Core hooks
+### UI Pages
 
-- **report**: Run a report from the plugins home page. — Supported (`templates/hooks/report.pl`)
-- **tool**: Run a tool page from the plugins home page. — Supported (`templates/hooks/tool.pl`)
-- **to_marc**: Convert arbitrary files to MARC for the staging tool. — Supported (`templates/hooks/to_marc.pl`)
-- **edifact**: Add a vendor to EDIFACT module. — Missing
-- **opac_online_payment**: Add a payment method in OPAC account. — Supported (`templates/hooks/opac_online_payment.pl` with `opac_online_payment_begin.pl`/`end.pl`)
-- **intranet_catalog_biblio_enhancements_toolbar_button**: Add a button to intranet biblio toolbar. — Supported (`templates/hooks/intranet_catalog_biblio_enhancements_toolbar_button.pl`)
-- **api_namespace + api_routes**: Extend Koha REST API via plugins. — Supported (`templates/hooks/api_namespace.pl`, `templates/hooks/api_routes.pl`)
-- **static_routes**: Serve static files via API. — Supported (`templates/hooks/static_routes.pl`)
-- **opac_head + opac_js**: Add CSS/JS to OPAC globally. — Supported (`templates/hooks/opac_head.pl`, `templates/hooks/opac_js.pl`)
-- **intranet_head + intranet_js**: Add CSS/JS to staff globally. — Supported (`templates/hooks/intranet_head.pl`, `templates/hooks/intranet_js.pl`)
-- **after_biblio_action**: Post-CRUD biblio hook. — Missing
-- **after_item_action**: Post-CRUD item hook. — Missing
-- **check_password**: Validate password strength on set/update. — Missing
-- **intranet_catalog_biblio_tab**: Add tabs to intranet biblio detail. — Supported (`templates/hooks/intranet_catalog_biblio_tab.pl`)
-- **opac_online_payment_threshold**: Minimum allowed payment amount. — Missing
-- **before_send_messages**: Pre-process messages before sending. — Supported (`templates/hooks/before_send_messages.pl`)
-- **ill_availability_services**: Intercept ILL creation and show availabilities. — Missing
-- **ill_backend**: Register ILL backend (returns backend name). — Missing
-- **new_ill_backend**: Return ILL backend class. — Missing
-- **opac_detail_xslt_variables**: Add variables for OPAC detail XSLT. — Supported (`templates/hooks/opac_detail_xslt_variables.pl`)
-- **opac_results_xslt_variables**: Add variables for OPAC results XSLT. — Supported (`templates/hooks/opac_results_xslt_variables.pl`)
-- **after_hold_create**: After a hold is placed. — Missing
-- **after_circ_action**: After add renewal/issue/return. — Missing
-- **cronjob_nightly**: Run daily background tasks. — Supported (`templates/hooks/cronjob_nightly.pl`)
-- **item_barcode_transform**: Transform scanned item barcode. — Supported (`templates/hooks/item_barcode_transform.pl`)
-- **patron_barcode_transform**: Transform scanned patron barcode. — Supported (`templates/hooks/patron_barcode_transform.pl`)
-- **after_authority_action**: After add/mod/del authority. — Missing
-- **after_hold_action**: On hold status changes (fill, cancel, ...). — Missing
-- **background_tasks**: Register plugin background tasks. — Supported (`templates/hooks/background_tasks.pl`)
-- **after_recall_action**: On recall actions. — Missing
-- **after_account_action**: On account actions. — Missing
-- **patron_generate_userid**: Generate `userid` on patron creation. — Missing
-- **intranet_cover_images**: Provide cover images in staff. — Missing
-- **opac_cover_images**: Provide cover images in OPAC. — Missing
-- **patron_consent_type**: Add consent type for OPAC account page. — Missing
-- **template_include_paths**: Add Template::Toolkit include paths. — Missing
-- **before_biblio_action**: Pre-CRUD biblio hook. — Missing
-- **auth_client_get_user**: Map authenticated user to patron data. — Missing
-- **transform_prepared_letter**: Modify prepared letter data before return. — Supported (`templates/hooks/transform_prepared_letter.pl`)
-- **framework_defaults_override**: Fine-grained framework defaults. — Missing
-- **before_orderline_create**: Before creating orderline from MARC file. — Missing
-- **overwrite_calc_fine**: Customize graduated fine calculation. — Missing
-- **elasticsearch_to_document**: Modify document sent to Elasticsearch. — Missing
-- **notices_content**: Add data to notices context. — Missing
+| Hook | Description | Generates |
+|------|-------------|-----------|
+| `admin` | Admin-only entry point from Admin page | `admin.tt` page template |
+| `configure` | Plugin settings and configuration | `configure.tt` page template |
+| `report` | Report generation (HTML/CSV) | `report.tt` page template |
+| `tool` | Tool entry point from Tools page | `tool.tt` page template |
 
-Additional methods seen in Koha source
+When selected during `init`, the corresponding `.tt` template is automatically generated.
 
-- **opac_online_payment_begin/end**: Lifecycle wrappers for OPAC payments — Supported (`templates/hooks/opac_online_payment_begin.pl`, `..._end.pl`)
-- **provides_api**: Used by ILL metadata enrichment (availability) — Missing
+### API & Static Files
 
-#### Non-hook scripts/templates included in scaffold
+| Hook | Description | Notes |
+|------|-------------|-------|
+| `api` | Extend the Koha REST API | Bundle: emits `api_namespace` + `api_routes`, creates empty `openapi.json`. Use `koha-plugin add api-route` to compose routes. |
+| `static` | Serve static files through the API | Creates `staticapi.json` from template. Use `koha-plugin staticapi` to regenerate. |
 
-- `templates/hooks/install.pl`, `uninstall.pl`, `upgrade.pl`: Lifecycle scripts
-- `templates/hooks/admin.pl`: Optional plugin admin page
-- `templates/sites/action.tt`: Minimal TT page template
-- `templates/PLUGIN.yml`: Plugin metadata template
+The `api_routes` hook reads `openapi.json` via `$self->mbf_read('openapi.json')`. The spec follows OpenAPI 2.0 (Swagger) — paths only, not a full spec. Koha merges it into its own API definition.
 
-#### Next steps to reach full coverage
+### Staff Interface
 
-- Add new templates under `templates/hooks/` for the hooks marked Missing.
-- Update `templates/[a].pm.tt` to include empty stub methods for new hooks as desired.
-- Consider adding test coverage for hook discovery and minimal execution.
+| Hook | Description | Returns |
+|------|-------------|---------|
+| `intranet_head` | Inject CSS into staff interface (all pages) | HTML string |
+| `intranet_js` | Inject JavaScript into staff interface (all pages) | HTML string |
+| `intranet_catalog_biblio_enhancements_toolbar_button` | Add button to biblio detail toolbar | HTML string |
+| `intranet_catalog_biblio_tab` | Add tabs to biblio detail page | ArrayRef of `Koha::Plugins::Tab` |
+| `intranet_cover_images` | Provide cover images in staff interface | See [BDS Covers plugin](https://github.com/PTFS-Europe/koha-plugin-addBDSCovers) |
 
-Reference
+### OPAC
 
-- Kitchen Sink plugin implements most hooks; review it for examples.
-- Grep in Koha for `GetPlugins({ method => '...' })` to discover new/changed hooks.
+| Hook | Description | Returns |
+|------|-------------|---------|
+| `opac_head` | Inject CSS into OPAC (all pages) | HTML string |
+| `opac_js` | Inject JavaScript into OPAC (all pages) | HTML string |
+| `opac_detail_xslt_variables` | Add variables for OPAC detail XSLT | HashRef |
+| `opac_results_xslt_variables` | Add variables for OPAC results XSLT | HashRef |
+| `opac_cover_images` | Provide cover images in OPAC | See [BDS Covers plugin](https://github.com/PTFS-Europe/koha-plugin-addBDSCovers) |
+| `opac_online_payment` | Bundle: payment + begin/end/threshold | See below |
 
-#### Plugin background jobs
+**OPAC Payment bundle:** Selecting `opac_online_payment` includes all four payment hooks:
+- `opac_online_payment` — enable payment capability
+- `opac_online_payment_begin` — initialize payment
+- `opac_online_payment_end` — finalize payment
+- `opac_online_payment_threshold` — minimum allowed payment amount
 
-Requirements
+### Patron
 
-- Your plugin metadata must include a `namespace` key (`$plugin->get_metadata->{namespace}`).
-- Implement `background_tasks` to map task codes to implementing classes:
+| Hook | Description | Returns |
+|------|-------------|---------|
+| `check_password` | Custom password strength validation | Boolean or error message |
+| `patron_barcode_transform` | Transform patron barcodes on scan | Modified barcode (in-place) |
+| `patron_generate_userid` | Generate userid on patron creation | String |
+| `patron_consent_type` | Add consent type for OPAC account page | HashRef |
+| `auth_client_get_user` | Map authenticated user to patron data | Patron data |
 
-```perl
-sub background_tasks {
-    return {
-        foo => 'MyPlugin::Class::Foo',
-        bar => 'MyPlugin::Class::Bar',
-    };
-}
-```
+### Catalog CRUD
 
-Caveats
+| Hook | Description | Receives |
+|------|-------------|----------|
+| `before_biblio_action` | Before biblio create/update/delete | `$action`, `$biblio` |
+| `after_biblio_action` | After biblio create/update/delete | `$action`, `$biblio` |
+| `after_item_action` | After item create/update/delete | `$action`, `$item` |
+| `after_authority_action` | After authority create/update/delete | `$action`, `$authority` |
 
-- No default template for job detail views yet.
-- After installing a plugin that registers background tasks, restart `background_jobs_worker.pl` processes; they cache plugin code and task mappings.
+### Circulation
 
-#### Under development hooks (reference)
+| Hook | Description |
+|------|-------------|
+| `after_circ_action` | After add renewal, issue, or return |
+| `after_hold_create` | After a hold is placed |
+| `after_hold_action` | On hold status changes (fill, cancel, suspend, resume, transfer, waiting) |
+| `after_recall_action` | On recall actions |
+| `after_account_action` | On account actions (payment, writeoff, etc.) |
 
-- **addbiblio_check_record**: Validate MARC on save; return values block save.
-- **capture_raw_password**: Capture raw passwords on create/edit.
-- **checkpw**: Authentication plugins.
-- **after_patron_action**: After patron create/modify/delete.
-- **object_store_pre/post**: Around `Koha::Object` store.
-- **before_authority_action**: Pre add/mod/del authority.
-- **before_index_action**: Before ES index update on biblio records.
+### Notices & Messaging
 
----
+| Hook | Description | Returns |
+|------|-------------|---------|
+| `notices_content` | Add data to notices template context | HashRef |
+| `transform_prepared_letter` | Modify letter data before delivery | Modified letter |
+| `before_send_messages` | Pre-process messages before sending | Void |
 
-Last updated: 2025-08-13
+### ILL (Interlibrary Loan)
+
+| Hook | Description | Returns |
+|------|-------------|---------|
+| `ill_backend` | Register as an ILL backend | String (backend name) |
+| `new_ill_backend` | Return ILL backend class | Class name or ref |
+| `ill_availability_services` | Intercept ILL creation, show availabilities | Service data |
+
+`ill_backend` and `new_ill_backend` target different ILL framework versions. Most new plugins should implement both.
+
+### Background & Scheduling
+
+| Hook | Description | Returns |
+|------|-------------|---------|
+| `background_tasks` | Register custom background job types | HashRef mapping task name to class |
+| `cronjob_nightly` | Execute tasks via `plugins_nightly.pl` | Void |
+
+**Note:** After installing a plugin with `background_tasks`, restart `background_jobs_worker.pl` — it caches plugin code.
+
+### Miscellaneous
+
+| Hook | Description |
+|------|-------------|
+| `edifact` | Add vendor to EDIFACT module |
+| `to_marc` | Convert arbitrary files to MARC from staging tool |
+| `item_barcode_transform` | Transform item barcodes on scan |
+| `template_include_paths` | Add Template::Toolkit include paths |
+| `framework_defaults_override` | Fine-grained framework defaults |
+| `before_orderline_create` | Before creating orderline from MARC file |
+| `overwrite_calc_fine` | Customize graduated fine calculation |
+| `elasticsearch_to_document` | Modify document before sending to Elasticsearch |
+
+### Under Development (not yet in stable Koha)
+
+These hooks exist in Koha source but are not yet in a stable release:
+- `addbiblio_check_record` — validate MARC on save
+- `checkpw` — authentication plugins
+- `after_patron_action` — after patron create/modify/delete
+- `object_store_pre/post` — around `Koha::Object` store
+- `before_authority_action` — pre add/mod/del authority
+- `before_index_action` — before ES index update
+
+### References
+
+- [Kitchen Sink plugin](https://github.com/bywatersolutions/dev-koha-plugin-kitchen-sink) — implements every hook
+- [Koha wiki: Plugin Hooks](https://wiki.koha-community.org/wiki/Koha_Plugin_Hooks) — canonical hook list
+- [LMSCloud plugin utils](https://github.com/LMSCloudPaulD/koha-plugin-lmscloud-util) — shared utilities for migrations, pages, i18n

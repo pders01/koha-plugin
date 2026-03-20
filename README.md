@@ -1,101 +1,105 @@
 # koha-plugin
 
-This project is my attempt at doing the boring stuff less often. I hope it's useful to you!
-
-Disclaimer: this project was stuck in my head for over a year, but at the time of writing it's 2 days old.
-It's not a full-featured solution yet and definetly contains bugs (some I am already aware of).
-
-
-## Badges
+A scaffolding tool for Koha plugins. Generates correct, working plugin code with interactive hook selection, API route composition, and version management.
 
 [![GPLv3 License](https://img.shields.io/badge/License-GPL%20v3-yellow.svg)](https://opensource.org/licenses/)
 
+## What it does
+
+- **`init`** — Interactive plugin initialization: prompts for metadata, lets you pick from 50+ Koha hooks, generates the plugin module with working stubs, config file, manifest, templates, and `.gitignore`
+- **`add`** — Incrementally add components: UI page templates, API routes (with controller generation), Node.js frontend projects
+- **`increment`** — Semver-aware version bumping across config, module, and package.json
+- **`package`** — Create `.kpz` files for Koha plugin installation
+- **`ktd`** — One-command deployment to KTD containers
+
+The generated plugin code is standard Koha — no runtime dependency on this tool. You can stop using the scaffolder at any time and continue developing by hand.
+
+## Quick start
+
+```bash
+git clone https://github.com/pders01/koha-plugin.git my-plugin
+cd my-plugin && rm -rf .git && git init
+carton install    # or: cpanm --installdeps .
+perl bin/koha-plugin.pl init
+```
+
+See the [quickstart guide](docs/quickstart.md) for the full walkthrough.
 
 ## Installation
 
-### Plugins within Koha
+### Dependencies
 
-Koha's Plugin System allows for you to add additional tools and reports to Koha that are specific to your library.
-Plugins are installed by uploading KPZ ( Koha Plugin Zip ) packages.
-A KPZ file is just a zip file containing the perl files, template files, and any other files necessary to make the plugin work.
+Install via [Carton](https://metacpan.org/pod/Carton) (recommended) or any CPAN client:
 
-The plugin system needs to be turned on by a system administrator.
-
-To set up the Koha plugin system you must first make some changes to your install.
-
-* Change `<enable_plugins>0<enable_plugins>` to `<enable_plugins>1</enable_plugins>` in your koha-conf.xml file
-* Confirm that the path to `<pluginsdir>` exists, is correct, and is writable by the web server
-* Restart your webserver
-
-Once set up is complete you will need to alter your UseKohaPlugins system preference. On the Tools page you will see the Tools Plugins and on the Reports page you will see the Reports Plugins.
-
-### This project
-
-I wanted to try out new features here, so you'll need `perl ^5.038`. If you're using an earlier version, I'd recommend checking out [perlbrew](https://perlbrew.pl/). 
-
-There are some options, depending on what you prefer:
-- Via [GitHub (pders01/koha-plugin)](https://github.com/pders01/koha-plugin)
-    - Use the template button and create a new repository from the template.
-    - Use the GitHub CLI: `$ gh repo create -p pders01/koha-plugin`.
-- Just via git
-```console
-$ git clone https://github.com/pders01/koha-plugin.git "koha-plugin-$NAME"
-$ cd "koha-plugin-$NAME"
-$ rm -rf .git
-$ git init
-$ git remote add origin https://$HOST/$USER/koha-plugin-$NAME.git
+```bash
+carton install
+# or: cpanm --installdeps .
 ```
 
-The next thing you'll need is [Carton](https://metacpan.org/pod/Carton). You can install it with `$ cpanm carton` for example.
-Then install the dependencies within the project root with `$ carton install`.
+The tool also works with globally installed modules or `local::lib`. Carton is not required.
 
-The last thing you'll need (optional but recommended) is [just](https://just.systems/).
-Then you can just run `$ just` for an overview of commands in the project root.
+### Task runner (optional)
 
-You can of course just run the scripts without just. Take a look at the `justfile`.
+[just](https://just.systems/) provides convenient shortcuts. Run `just` for available commands. Everything `just` does can also be done directly with `perl bin/koha-plugin.pl`.
 
-Before you start, copy a config template to the project root and customize it:
-```console
-$ cp templates/koha-plugin.yml koha-plugin.yml
+### Standalone binary
+
+Build a self-contained binary that needs no Perl setup on the target system:
+
+```bash
+just binary
+# Binary at dist/koha-plugin
 ```
-JSON is also supported (`templates/koha-plugin.json`). If you have a legacy `.env` file, you can migrate it with `koha-plugin migrate yml`.
 
+## Documentation
+
+- [Quickstart](docs/quickstart.md) — zero to working plugin in 5 minutes
+- [Command reference](docs/commands.md) — all commands and options
+- [Hook reference](docs/koha-plugin-hooks.md) — every Koha plugin hook with descriptions, return types, and groupings
+- [Writing a simple plugin](docs/how-to-write-a-simple-plugin.md) — minimal example
+- [POD style guide](docs/pod-style-guide.md) — conventions for hook stubs
+
+## Configuration
+
+The tool reads plugin metadata from `koha-plugin.yml` (or `koha-plugin.json`):
+
+```yaml
+name: "Koha::Plugin::Com::Example::MyPlugin"
+author: "Your Name"
+version: "0.1.0"
+description: "What your plugin does"
+minimum_version: "22.11.00.000"
+maximum_version: ""
+release_filename: "example-myplugin"
+static_dir_name: "static"
+date_authored: "2026-03-20"
+date_updated: "2026-03-20"
+```
+
+Legacy `.env` files are still supported. Migrate with `koha-plugin migrate yml`.
+
+## Examples
+
+- [koha-plugin-pomodoro](https://github.com/pders01/koha-plugin-pomodoro)
+- [koha-plugin-command-palette](https://github.com/pders01/koha-plugin-command-palette)
+
+## Related
+
+- [LMSCloud plugin utils](https://github.com/LMSCloudPaulD/koha-plugin-lmscloud-util) — shared utilities for database migrations, OPAC pages, and i18n
+- [Kitchen Sink plugin](https://github.com/bywatersolutions/dev-koha-plugin-kitchen-sink) — reference implementation of every Koha plugin hook
+
+## Contributing
+
+Contributions welcome. Please use `perltidy` and `perlimports` with the shipped configuration files.
 
 ## License
 
 [GPL v3](https://github.com/pders01/koha-plugin?tab=GPL-3.0-1-ov-file#readme)
 
-
 ## Support
 
-For support, ping me on [Koha's Mattermost](https://chat.koha-community.org) __@paulderscheid__.
+Ping me on [Koha's Mattermost](https://chat.koha-community.org) **@paulderscheid**.
 
+## Author
 
-## Acknowledgements
-
- - [dev-koha-plugin-kitchen-sink](https://github.com/bywatersolutions/dev-koha-plugin-kitchen-sink) by [byWater Solutions](https://bywatersolutions.com) and [friends](https://chat.koha-community.org)
- - [Koha Community](https://koha-community.org)
-
-
-## Contributing
-
-Contributions are welcome! Just PR but please use `perltidy` and `perlimports` with the shipped configuration files.
-
-
-## Demo
-
-For example projects, check out:
-- [koha-plugin-pomodoro](https://github.com/pders01/koha-plugin-pomodoro)
-- [koha-plugin-command-palette](https://github.com/pders01/koha-plugin-command-palette) (This one is an example for a plugin that migrated to pders01/koha-plugin)
-
-
-## Documentation
-
-- Hook coverage and usage: `docs/koha-plugin-hooks.md`
-- Minimal plugin example (inject JS via `intranet_js`): `docs/how-to-write-a-simple-plugin.md`
-
-
-## Authors
-
-- [@pders01](https://www.github.com/pders01)
-
+[@pders01](https://www.github.com/pders01)
