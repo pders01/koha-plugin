@@ -84,8 +84,21 @@ Readonly my $HOOKS => [
 ];
 
 sub run_init {
+    my (%opts) = @_;
+
     my $metadata = metadata_from_env();
-    _prompt_for_metadata($metadata) or do { l( 'info', 'aborting init...' ) and return };
+
+    # Non-interactive: skip prompts if metadata is already populated (from config/env)
+    if ( !$opts{hooks} ) {
+        _prompt_for_metadata($metadata) or do { l( 'info', 'aborting init...' ) and return };
+    }
+    else {
+        # In non-interactive mode, validate what we have
+        if ( !validate_metadata($metadata) ) {
+            l( 'error', 'metadata validation failed; set values via config file or env vars' );
+            return;
+        }
+    }
 
     my $cwd        = cwd;
     my $components = [ split /::/smx, $metadata->{name} ];
@@ -105,18 +118,26 @@ sub run_init {
             die "Template error: $Template::ERROR\n";
         }
 
-        my $base  = _base_module_path( $path, $components->@[ $CONST->{'INDEX_PROJECT'} ] );
-        my $hooks = [
-            choose(
-                $HOOKS,
-                {   color => 2,
-                    info  => qq{Hooks are grouped by category. Bundles:\n}
-                        . qq{  api = api_namespace + api_routes\n}
-                        . qq{  opac_online_payment = payment + begin/end/threshold},
-                    prompt => q{Select with SPACE, confirm with ENTER.}
-                }
-            )
-        ];
+        my $base = _base_module_path( $path, $components->@[ $CONST->{'INDEX_PROJECT'} ] );
+
+        # Non-interactive: use provided hooks list; interactive: use Term::Choose
+        my $hooks;
+        if ( $opts{hooks} ) {
+            $hooks = [ split /,/smx, $opts{hooks} ];
+        }
+        else {
+            $hooks = [
+                choose(
+                    $HOOKS,
+                    {   color => 2,
+                        info  => qq{Hooks are grouped by category. Bundles:\n}
+                            . qq{  api = api_namespace + api_routes\n}
+                            . qq{  opac_online_payment = payment + begin/end/threshold},
+                        prompt => q{Select with SPACE, confirm with ENTER.}
+                    }
+                )
+            ];
+        }
 
         $tt->process(
             '[a].pm.tt',

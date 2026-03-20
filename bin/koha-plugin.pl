@@ -16,6 +16,9 @@ BEGIN {
         # Users can also set PERL5LIB, use local::lib, or install deps globally.
         my $carton_lib = "$root/local/lib/perl5";
         lib->import($carton_lib) if -d $carton_lib;
+
+        # Set project root so asset_dir() resolves templates and scripts
+        $ENV{KOHA_PLUGIN_ROOT} //= $root;
     }
 }
 
@@ -112,20 +115,41 @@ sub _cmd_clean {
 }
 
 sub _cmd_init {
-    run_init();
+    require Getopt::Long;
+    my $hooks;
+    Getopt::Long::GetOptionsFromArray( \@_, 'hooks=s' => \$hooks );
+    run_init( $hooks ? ( hooks => $hooks ) : () );
 }
 
 sub _cmd_add {
-    my ($component) = @_;
+    my $component = shift;
     if ( !$component ) {
-        l( 'error', 'usage: koha-plugin add <component>' );
-        l( 'info',  '  action     - UI page template (admin, configure, report, tool)' );
+        l( 'error', 'usage: koha-plugin add <component> [options]' );
+        l( 'info',  '  action     - UI page template (--type admin|configure|report|tool)' );
         l( 'info',  '  node       - Node.js project (package.json + src/)' );
-        l( 'info',  '  api-route  - OpenAPI route + controller stub' );
-        l( 'info',  '  migration  - Numbered SQL migration file' );
+        l( 'info',  '  api-route  - OpenAPI route (--path, --method, --operation, --controller, --permission)' );
+        l( 'info',  '  migration  - SQL migration file (--description)' );
         exit 1;
     }
-    run_add($component);
+
+    # Parse component-specific options
+    require Getopt::Long;
+    my %opts;
+    Getopt::Long::GetOptionsFromArray(
+        \@_,
+        'type=s'        => \$opts{type},
+        'path=s'        => \$opts{path},
+        'method=s'      => \$opts{method},
+        'operation=s'   => \$opts{operation},
+        'controller=s'  => \$opts{controller},
+        'permission=s'  => \$opts{permission},
+        'description=s' => \$opts{description},
+    );
+
+    # Remove undef entries so handlers can distinguish "not provided" from "empty"
+    delete $opts{$_} for grep { !defined $opts{$_} } keys %opts;
+
+    run_add( $component, %opts );
 }
 
 sub _cmd_increment {

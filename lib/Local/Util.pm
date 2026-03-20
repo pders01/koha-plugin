@@ -33,9 +33,9 @@ sub asset_dir {
     my ($subdir) = @_;
 
     my $base
-        = $ENV{PAR_TEMP}
-        ? File::Spec->catdir( $ENV{PAR_TEMP}, 'inc' )
-        : q{.};
+        = $ENV{PAR_TEMP}         ? File::Spec->catdir( $ENV{PAR_TEMP}, 'inc' )
+        : $ENV{KOHA_PLUGIN_ROOT} ? $ENV{KOHA_PLUGIN_ROOT}
+        :                          q{.};
 
     return defined $subdir
         ? File::Spec->catdir( $base, $subdir )
