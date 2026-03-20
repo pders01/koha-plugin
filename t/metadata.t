@@ -52,7 +52,9 @@ subtest 'validate_metadata succeeds with valid data' => sub {
     # Suppress log output
     my $output = q{};
     local *STDOUT;
+    local *STDERR;
     open STDOUT, '>', \$output or die;
+    open STDERR, '>', \$output or die;
 
     ok( validate_metadata($m), 'valid metadata passes' );
 };
@@ -62,7 +64,9 @@ subtest 'validate_metadata fails without name' => sub {
 
     my $output = q{};
     local *STDOUT;
+    local *STDERR;
     open STDOUT, '>', \$output or die;
+    open STDERR, '>', \$output or die;
 
     ok( !validate_metadata($m), 'missing name fails' );
 };
@@ -72,7 +76,9 @@ subtest 'validate_metadata fails with wrong name format' => sub {
 
     my $output = q{};
     local *STDOUT;
+    local *STDERR;
     open STDOUT, '>', \$output or die;
+    open STDERR, '>', \$output or die;
 
     ok( !validate_metadata($m), 'wrong name format fails' );
 };
@@ -86,7 +92,9 @@ subtest 'validate_metadata rewrites "today" dates' => sub {
 
     my $output = q{};
     local *STDOUT;
+    local *STDERR;
     open STDOUT, '>', \$output or die;
+    open STDERR, '>', \$output or die;
 
     validate_metadata($m);
     like( $m->{date_authored}, qr/^\d{4}-\d{2}-\d{2}$/, 'date_authored rewritten to ISO' );

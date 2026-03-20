@@ -40,7 +40,7 @@ Void (HTML output via output_html)
 sub configure {
     my ( $self, $args ) = @_;
 
-    my $template = $self->get_template( { file => q{} } );
+    my $template = $self->get_template( { file => 'configure.tt' } );
 
     return $self->output_html( $template->output );
 }

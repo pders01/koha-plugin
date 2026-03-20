@@ -25,6 +25,6 @@ sub api_namespace {
 
     # [a] here represents the <project> part of your name, but you can use
     # whatever you want here as long as it doesn't clash with other plugins.
-    return '[a]';
+    return '[% a %]';
 }
 

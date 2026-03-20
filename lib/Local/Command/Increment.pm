@@ -80,6 +80,11 @@ sub _incremented_components {
         $clone->[$index]++;
     }
 
+    # Reset lower-order components per semver convention
+    for my $i ( ( $index + 1 ) .. 2 ) {
+        $clone->[$i] = 0;
+    }
+
     l( 'info', join q{ }, "incrementing $type version from", _join_components($components), 'to', _join_components($clone) );
 
     return $clone;

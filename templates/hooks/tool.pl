@@ -45,7 +45,7 @@ Void (HTML output via output_html)
 sub tool {
     my ( $self, $args ) = @_;
 
-    my $template = $self->get_template( { file => q{} } );
+    my $template = $self->get_template( { file => 'tool.tt' } );
 
     return $self->output_html( $template->output );
 }

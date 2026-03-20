@@ -126,7 +126,9 @@ DOTENV
 
     my $output = q{};
     local *STDOUT;
+    local *STDERR;
     open STDOUT, '>', \$output or die;
+    open STDERR, '>', \$output or die;
 
     my $result = migrate_from_dotenv('yml');
     is( $result, 'koha-plugin.yml', 'returns target filename' );

@@ -46,7 +46,7 @@ Void (HTML output via output_html)
 sub report {
     my ( $self, $args ) = @_;
 
-    my $template = $self->get_template( { file => q{} } );
+    my $template = $self->get_template( { file => 'report.tt' } );
 
     return $self->output_html( $template->output );
 }

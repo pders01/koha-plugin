@@ -42,7 +42,7 @@ Void (HTML output via output_html)
 sub admin {
     my ( $self, $args ) = @_;
 
-    my $template = $self->get_template( { file => q{} } );
+    my $template = $self->get_template( { file => 'admin.tt' } );
 
     return $self->output_html( $template->output );
 }
