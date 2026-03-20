@@ -142,6 +142,26 @@ sub run_init {
 
     $manifest->write("$path/PLUGIN.yml");
 
+    # Generate openapi.json skeleton when api hooks are selected
+    my %selected = map { $_ => 1 } $hooks->@*;
+    if ( $selected{api} ) {
+        my $openapi_dest = "$path/openapi.json";
+        $tt->process(
+            'openapi.json',
+            {   c => $components->@[ $CONST->{'INDEX_TLD'} ],
+                b => $components->@[ $CONST->{'INDEX_ORG'} ],
+                a => $components->@[ $CONST->{'INDEX_PROJECT'} ],
+            },
+            $openapi_dest,
+        );
+        if ( $tt->error ) {
+            l( 'warning', 'openapi.json generation failed: ' . $tt->error );
+        }
+        else {
+            l( 'info', "generated openapi.json at $openapi_dest" );
+        }
+    }
+
     return 1;
 }
 
