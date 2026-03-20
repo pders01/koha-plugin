@@ -154,7 +154,7 @@ sub run_init {
             die 'Template processing failed: ' . $tt->error . "\n";
         }
 
-        my $tidy_error = perltidy( source => $base, destination => $base );
+        my $tidy_error = perltidy( argv => q{}, source => $base, destination => $base );
         if ($tidy_error) {
             die "Perl::Tidy failed: $tidy_error\n";
         }

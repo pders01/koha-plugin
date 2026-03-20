@@ -7,7 +7,7 @@ This subroutine triggers the beginning of the online payment process in the OPAC
 
 The method can either result in displaying a form to the patron that is submitted, or 
 it can directly redirect the patron to a payment service such as PayPal, depending 
-on the plugin’s configuration and requirements.
+on the plugin's configuration and requirements.
 
 It is responsible for gathering account details, payment method information, and preparing 
 the necessary data for the payment process. The subroutine should be adapted based on 

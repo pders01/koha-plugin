@@ -7,7 +7,7 @@ This subroutine is a plugin hook that is triggered by a nightly cron job.
 Plugins can implement this method to perform routine tasks such as data cleanup, 
 synchronization, or other maintenance work that needs to be executed on a scheduled basis.
 
-The actual logic can vary depending on the plugin’s requirements, and this hook 
+The actual logic can vary depending on the plugin's requirements, and this hook
 offers flexibility for handling nightly background operations.
 
 Context: Run daily background tasks when plugins_nightly cron executes.
