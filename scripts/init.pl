@@ -16,7 +16,7 @@ use Term::ReadLine  ();
 use Types::Standard qw();
 use YAML::Tiny      ();
 
-use Local::Metadata ();
+use Local::Metadata qw( metadata_from_env validate_metadata stringify_metadata );
 use Local::Util     qw( l );
 
 our $VERSION = '0.0.1';
@@ -84,11 +84,11 @@ Readonly my $HOOKS => [
 ];
 
 sub main() {
-    my $metadata = Local::Metadata->new;
+    my $metadata = metadata_from_env();
     _prompt_for_metadata($metadata) or do { l( 'info', 'aborting init...' ) and return };
 
     my $cwd        = cwd;
-    my $components = [ split /::/smx, $metadata->name ];
+    my $components = [ split /::/smx, $metadata->{name} ];
     my $name       = join q{/}, $components->@*;
     my $path       = path("$cwd/$name");
     if ( !$path->mkdir ) {
@@ -123,7 +123,7 @@ sub main() {
             c        => $components->@[ $CONST->{'INDEX_TLD'} ],
             b        => $components->@[ $CONST->{'INDEX_ORG'} ],
             a        => $components->@[ $CONST->{'INDEX_PROJECT'} ],
-            metadata => $metadata->stringify,
+            metadata => stringify_metadata($metadata),
             ( $hooks->@* ? map { $_ => 1 } $hooks->@* : () )
         },
         _base_module_path( $path, $components->@[ $CONST->{'INDEX_PROJECT'} ] ),
@@ -137,7 +137,7 @@ sub main() {
         l( 'error', $error ) and return;
     }
 
-    my $manifest = YAML::Tiny->new( { $metadata->to_hashref->%*, module => join q{::}, $components->@* } );
+    my $manifest = YAML::Tiny->new( { $metadata->%*, module => join q{::}, $components->@* } );
     if ( !$manifest ) {
         l( 'error', 'manifest could not be generated' ) and return;
     }
@@ -159,55 +159,55 @@ sub _prompt_for_metadata($metadata) {    ## no critic qw(Subroutines::ProhibitEx
     while (1) {
         my $name = $term->get_reply(
             prompt  => 'Plugin package name (Koha::Plugin::<TLD>::<ORG>::<PROJECT>):',
-            default => $metadata->name // q{},
+            default => $metadata->{name} // q{},
         );
         if ( defined $name && $name =~ $name_pattern ) {
-            $metadata->name($name);
+            $metadata->{name} = $name;
         } else {
             l( 'warning', 'Invalid name; expected Koha::Plugin::<TLD>::<ORG>::<PROJECT>' );
             next;
         }
 
-        my $author = $term->get_reply( prompt => 'Author:', default => $metadata->author // q{} );
-        $metadata->author( $author // q{} );
+        my $author = $term->get_reply( prompt => 'Author:', default => $metadata->{author} // q{} );
+        $metadata->{author} = $author // q{};
 
-        my $description = $term->get_reply( prompt => 'Description:', default => $metadata->description // q{} );
-        $metadata->description( $description // q{} );
+        my $description = $term->get_reply( prompt => 'Description:', default => $metadata->{description} // q{} );
+        $metadata->{description} = $description // q{};
 
         my $min_ver = $term->get_reply(
             prompt  => 'Minimum Koha version (e.g. 22.11.00.000):',
-            default => $metadata->min_koha_version // q{}
+            default => $metadata->{min_koha_version} // q{}
         );
-        $metadata->min_koha_version( $min_ver // q{} );
+        $metadata->{min_koha_version} = $min_ver // q{};
 
         my $max_ver = $term->get_reply(
             prompt  => 'Maximum Koha version (e.g. 25.05.00.000):',
-            default => $metadata->max_koha_version // q{}
+            default => $metadata->{max_koha_version} // q{}
         );
-        $metadata->max_koha_version( $max_ver // q{} );
+        $metadata->{max_koha_version} = $max_ver // q{};
 
         my $version = $term->get_reply(
             prompt  => 'Plugin version (semver, e.g. 0.1.0):',
-            default => $metadata->version // '0.1.0'
+            default => $metadata->{version} // '0.1.0'
         );
-        $metadata->version( $version // q{} );
+        $metadata->{version} = $version // q{};
 
         my $date_authored = $term->get_reply(
             prompt  => 'Date authored (YYYY-MM-DD or today):',
-            default => $metadata->date_authored // 'today'
+            default => $metadata->{date_authored} // 'today'
         );
-        $metadata->date_authored( $date_authored // 'today' );
+        $metadata->{date_authored} = $date_authored // 'today';
 
         my $date_updated = $term->get_reply(
             prompt  => 'Date updated (YYYY-MM-DD or today):',
-            default => $metadata->date_updated // 'today'
+            default => $metadata->{date_updated} // 'today'
         );
-        $metadata->date_updated( $date_updated // 'today' );
+        $metadata->{date_updated} = $date_updated // 'today';
 
         # Derive sensible defaults for optional fields
         my $release_default = q{};
-        my $static_default  = $metadata->static_dir_name // 'static';
-        my $parts           = [ split /::/smx, ( $metadata->name // q{} ) ];
+        my $static_default  = $metadata->{static_dir_name} // 'static';
+        my $parts           = [ split /::/smx, ( $metadata->{name} // q{} ) ];
         if ( @{$parts} == $CONST->{'LENGTH_COMPONENTS'} ) {
             my ( undef, undef, undef, $org, $project ) = @{$parts};
             $release_default = lc join q{-}, $org, $project;
@@ -215,15 +215,15 @@ sub _prompt_for_metadata($metadata) {    ## no critic qw(Subroutines::ProhibitEx
 
         my $release_filename = $term->get_reply(
             prompt  => 'Release filename (basename for .kpz):',
-            default => $metadata->release_filename // $release_default
+            default => $metadata->{release_filename} // $release_default
         );
-        $metadata->release_filename( $release_filename // $release_default );
+        $metadata->{release_filename} = $release_filename // $release_default;
 
         my $static_dir = $term->get_reply( prompt => 'Static directory name:', default => $static_default );
-        $metadata->static_dir_name( $static_dir // $static_default );
+        $metadata->{static_dir_name} = $static_dir // $static_default;
 
         # Validate and loop if errors
-        return 1 if $metadata->validate;
+        return 1 if validate_metadata($metadata);
 
         my $retry = $term->get_reply( prompt => 'Validation failed. Retry? (y/N):', default => 'N' );
         return 0 if ( ( $retry // 'N' ) =~ /^[Nn]/smx );

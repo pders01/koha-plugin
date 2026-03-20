@@ -1,18 +1,20 @@
-package Local::Util v0.0.1;
+package Local::Util;
 
 use strict;
 use warnings;
-use feature 'signatures';
-use lib './local/lib/perl5';
 
 use Carp            qw( croak );
 use Term::ANSIColor qw( colored );
 
 use Exporter 'import';
 
-our @EXPORT_OK = qw(l);
+our @EXPORT_OK = qw( l );
 
-sub l( $type, $message ) {    ## no critic qw(ValuesAndExpressions::RequireInterpolationOfMetachars)
+## no critic qw(ValuesAndExpressions::RequireInterpolationOfMetachars)
+
+sub l {
+    my ( $type, $message ) = @_;
+
     print {
         info    => colored( "$message\n",          'bright_cyan' ),
         warning => colored( "warning: $message\n", 'bright_yellow' ),

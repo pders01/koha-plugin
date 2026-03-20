@@ -16,7 +16,7 @@ use Template     ();
 use Term::Choose qw(choose);
 use Term::UI     ();
 
-use Local::Metadata ();
+use Local::Metadata qw( metadata_from_env );
 use Local::Util     qw( l );
 
 our $VERSION = '0.0.1';
@@ -42,11 +42,11 @@ sub main($component) {    ## no critic qw(ValuesAndExpressions::RequireInterpola
                 l( 'error', $Template::ERROR ) and return;
             }
 
-            my $metadata = Local::Metadata->new;
+            my $metadata = metadata_from_env();
             my $action   = choose( [qw(admin configure report tool)] );
 
             my $cwd        = cwd;
-            my $components = [ split /::/smx, $metadata->name ];
+            my $components = [ split /::/smx, $metadata->{name} ];
             my $name       = join q{/}, $components->@*;
             my $path       = path("$cwd/$name");
 
@@ -64,7 +64,7 @@ sub main($component) {    ## no critic qw(ValuesAndExpressions::RequireInterpola
             return;
         },
         node => sub {
-            my $metadata = Local::Metadata->new;
+            my $metadata = metadata_from_env();
 
             my $j     = JSON->new;
             my $error = gensym;
@@ -82,20 +82,20 @@ sub main($component) {    ## no critic qw(ValuesAndExpressions::RequireInterpola
             }
 
             my $json = $j->utf8->decode( $path->slurp_utf8 );
-            if ( $metadata->name ) {
-                $json->{'name'} = lc join q{-}, [ split /::/smx, $metadata->name ]->@[ 0 .. 1, $CONST->{'INDEX_PROJECT'} ];
+            if ( $metadata->{name} ) {
+                $json->{'name'} = lc join q{-}, [ split /::/smx, $metadata->{name} ]->@[ 0 .. 1, $CONST->{'INDEX_PROJECT'} ];
             }
 
-            if ( $metadata->version ) {
-                $json->{'version'} = $metadata->version;
+            if ( $metadata->{version} ) {
+                $json->{'version'} = $metadata->{version};
             }
 
-            if ( $metadata->description ) {
-                $json->{'description'} = $metadata->description;
+            if ( $metadata->{description} ) {
+                $json->{'description'} = $metadata->{description};
             }
 
-            if ( $metadata->author ) {
-                $json->{'author'} = $metadata->author;
+            if ( $metadata->{author} ) {
+                $json->{'author'} = $metadata->{author};
             }
 
             my $src = path('src');
