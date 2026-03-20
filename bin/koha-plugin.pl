@@ -126,6 +126,7 @@ sub _cmd_add {
 }
 
 sub _cmd_increment {
+
     # Parse increment-specific options from remaining @ARGV
     require Getopt::Long;
     my $type  = 'patch';
@@ -191,6 +192,7 @@ sub _cmd_migrate {
 # --- Helpers ---
 
 sub _load_config {
+
     # 1. Try config file (koha-plugin.yml, koha-plugin.yaml, koha-plugin.json)
     my $config = load_config();
     if ($config) {
@@ -235,6 +237,9 @@ sub _run_script {
     if ( !-e $script ) {
         die "Script not found: $script\n";
     }
+
+    # Export root so shell scripts can find templates and other assets
+    local $ENV{KOHA_PLUGIN_ROOT} = asset_dir();
     my @cmd = ( $script, @args );
     system(@cmd) == 0 or die "Command failed: @cmd\n";
     return;

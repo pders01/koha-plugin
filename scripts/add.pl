@@ -79,6 +79,7 @@ sub main($component) {    ## no critic qw(ValuesAndExpressions::RequireInterpola
             my $path = path('package.json');
             if ( !$path->exists ) {
                 l( 'error', 'package.json was not created by `npm init`' );
+                return;
             }
 
             my $json = $j->utf8->decode( $path->slurp_utf8 );

@@ -4,7 +4,7 @@ if [ "$1" == "" ]; then
   exit 1
 fi
 
-PLUGIN_PATH="$(echo "$1" | tr -s '::' '/')"
+PLUGIN_PATH="${1//::/'/'}"
 if [ "$PLUGIN_PATH" == "" ]; then
   exit 1
 fi
@@ -17,7 +17,9 @@ if [ ${#STATIC_DIRS[@]} -eq 0 ]; then
   exit 1
 fi
 
-staticapi_template_file="templates/staticapi.json"
+# Resolve template path: KOHA_PLUGIN_ROOT (set by CLI/PAR) or script's own directory
+TOOL_ROOT="${KOHA_PLUGIN_ROOT:-$(cd "$(dirname "$0")/.." && pwd)}"
+staticapi_template_file="${TOOL_ROOT}/templates/staticapi.json"
 if [ ! -f "$staticapi_template_file" ]; then
   echo "Error: Template file not found at $staticapi_template_file"
   exit 1
