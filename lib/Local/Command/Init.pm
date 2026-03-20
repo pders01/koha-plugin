@@ -149,6 +149,21 @@ sub run_init {
         save_config( $metadata, 'koha-plugin.yml' );
         l( 'info', 'created koha-plugin.yml' );
 
+        # Create .gitignore for tool artifacts (Koha/ is conventionally committed)
+        my $gitignore = path('.gitignore');
+        if ( !$gitignore->exists ) {
+            $gitignore->spew_utf8(<<'GITIGNORE');
+dist/
+local/
+node_modules/
+.env
+.env.bak
+.DS_Store
+*.kpz
+GITIGNORE
+            l( 'info', 'created .gitignore' );
+        }
+
         my %selected = map { $_ => 1 } $hooks->@*;
 
         # Generate action templates for selected UI hooks
