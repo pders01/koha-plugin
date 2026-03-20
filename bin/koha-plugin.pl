@@ -76,7 +76,7 @@ Usage: koha-plugin <command> [arguments]
 
 Commands:
     init                        Initialize a new Koha plugin
-    add <component>             Add a component (action, node)
+    add <component>             Add a component (action, node, api-route)
     increment [options]         Increment version (patch, minor, major)
     package                     Create a .kpz file
     clean                       Remove Koha/ directory and package.json
@@ -117,7 +117,7 @@ sub _cmd_add {
     my ($component) = @_;
     if ( !$component ) {
         say 'Usage: koha-plugin add <component>';
-        say 'Components: action, node';
+        say 'Components: action, node, api-route';
         exit 1;
     }
     say "Adding component: $component";

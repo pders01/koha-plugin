@@ -142,24 +142,12 @@ sub run_init {
 
     $manifest->write("$path/PLUGIN.yml");
 
-    # Generate openapi.json skeleton when api hooks are selected
+    # Create empty openapi.json when api hooks are selected
     my %selected = map { $_ => 1 } $hooks->@*;
     if ( $selected{api} ) {
-        my $openapi_dest = "$path/openapi.json";
-        $tt->process(
-            'openapi.json',
-            {   c => $components->@[ $CONST->{'INDEX_TLD'} ],
-                b => $components->@[ $CONST->{'INDEX_ORG'} ],
-                a => $components->@[ $CONST->{'INDEX_PROJECT'} ],
-            },
-            $openapi_dest,
-        );
-        if ( $tt->error ) {
-            l( 'warning', 'openapi.json generation failed: ' . $tt->error );
-        }
-        else {
-            l( 'info', "generated openapi.json at $openapi_dest" );
-        }
+        my $openapi_dest = path("$path/openapi.json");
+        $openapi_dest->spew_utf8("{}\n");
+        l( 'info', "created $openapi_dest — run 'koha-plugin add api-route' to add routes" );
     }
 
     return 1;
