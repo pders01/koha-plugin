@@ -106,56 +106,70 @@ For `ref` and other Vue reactivity APIs, import them alongside `h`:
 
 #### Option 2: Pre-built SFCs (recommended for complex UIs)
 
-For anything beyond simple widgets, build your Vue Single File Components
-with vite or rspack and serve the output via `static_routes`.
+For anything beyond simple widgets, use the scaffolder to set up a full
+Vue build pipeline:
+
+```bash
+koha-plugin add vue --name NotesPanel --tag plugin-notes-panel
+npm install
+npm run build
+```
+
+This creates:
 
 ```
 my-plugin/
   src/
-    MyWidget.vue         # Standard Vue SFC with <template>
-    main.js              # Exports the component as default
-  vite.config.js
+    components/
+      NotesPanel.vue       # Vue SFC with <template>, <script setup>, <style scoped>
+    main.js                # Entry point, exports the component
+  vite.config.js           # Builds as ES module library, externalizes Vue
+  package.json             # Vue + vite dependencies, build/dev scripts
   Koha/Plugin/.../
     static/dist/
-      MyWidget.js        # Built ES module
+      NotesPanel.js        # Built ES module (served via static_routes)
+      NotesPanel.css        # Scoped styles
 ```
 
-`vite.config.js`:
-```javascript
-import { defineConfig } from "vite";
-import vue from "@vitejs/plugin-vue";
+Then wire it up in your `intranet_js` hook:
 
-export default defineConfig({
-  plugins: [vue()],
-  build: {
-    lib: {
-      entry: "src/main.js",
-      formats: ["es"],
-      fileName: "MyWidget",
-    },
-    outDir: "Koha/Plugin/.../static/dist",
-    rollupOptions: {
-      external: ["vue"],
-    },
-  },
-});
+```perl
+sub intranet_js {
+    my $self = shift;
+
+    return <<~'JS';
+    <link rel="stylesheet" href="/api/v1/contrib/myplugin/static/dist/NotesPanel.css">
+    <script type="module">
+      const islandsSrc = document.querySelector("script[src*='islands.esm']")?.src;
+      if (islandsSrc) {
+        const { registerIsland, hydrate } = await import(islandsSrc);
+
+        registerIsland("plugin-notes-panel", {
+          importFn: () => import("/api/v1/contrib/myplugin/static/dist/NotesPanel.js"),
+          config: { stores: [] },
+        });
+
+        // Place the island where you want it
+        const main = document.querySelector(".main.container-fluid");
+        if (main) {
+          const el = document.createElement("plugin-notes-panel");
+          el.setAttribute("greeting", "Hello from a Vue SFC!");
+          main.prepend(el);
+        }
+
+        hydrate();
+      }
+    </script>
+    JS
+}
 ```
 
-`src/main.js`:
-```javascript
-import MyWidget from "./MyWidget.vue";
-export default MyWidget;
-```
+During development, use `npm run dev` for watch mode — vite rebuilds
+on every save. Deploy to KTD with `koha-plugin ktd` to test.
 
-Then in `intranet_js`:
-```javascript
-registerIsland("plugin-my-widget", {
-  importFn: () => import("/api/v1/contrib/myplugin/static/dist/MyWidget.js"),
-  config: { stores: [] },
-});
-```
-
-This gives you full `<template>` support, `<style scoped>`, and all Vue features.
+This gives you full `<template>` support, `<script setup>`, `<style scoped>`,
+and all Vue 3 features. Vue is externalized in the build (not bundled),
+so the component uses Koha's own Vue instance at runtime.
 
 ### Known limitations
 

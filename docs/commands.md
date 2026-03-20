@@ -85,6 +85,24 @@ automatically.
 Requires the `background_tasks` hook to be present in the base module. If missing,
 run `koha-plugin add hook --type background_tasks` first.
 
+#### `koha-plugin add vue`
+
+Scaffold a Vue 3 island component with a vite build pipeline.
+
+**Non-interactive:** `--name NotesPanel --tag plugin-notes-panel`
+
+**Creates:**
+- `src/components/<Name>.vue` — Vue SFC with `<script setup>`, `<template>`, `<style scoped>`
+- `src/main.js` — entry point exporting the component
+- `vite.config.js` — builds as ES module library, output to plugin's `static/dist/`
+- `package.json` — Vue and vite dependencies with `build` and `dev` scripts
+
+Vue is externalized in the build — the component uses Koha's own Vue instance
+at runtime. After running `npm install && npm run build`, register the island
+in your `intranet_js` hook via `registerIsland()`.
+
+See [Vue Islands Guide](vue-islands.md) for full details and limitations.
+
 ---
 
 ### `koha-plugin check`
