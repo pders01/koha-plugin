@@ -340,8 +340,6 @@ sub _prompt_for_metadata {    ## no critic qw(Subroutines::ProhibitExcessComplex
         return 0 if ( ( $retry // 'N' ) =~ /^[Nn]/smx );
 
     }
-
-    return 1;
 }
 
 1;

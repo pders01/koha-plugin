@@ -44,6 +44,10 @@ update-meta:
 migrate format='yml':
   {{cli}} migrate {{format}}
 
+# Validate plugin for common issues
+check:
+  {{cli}} check
+
 # Build standalone binary
 binary:
   {{perl_exec}} scripts/build-binary.pl

@@ -53,7 +53,15 @@ sub run_add {
 }
 
 sub _add_action {
-    my (%opts) = @_;
+    my (%opts)     = @_;
+    my $metadata   = metadata_from_env();
+    my $components = [ split /::/smx, $metadata->{name} // q{} ];
+
+    if ( @{$components} != 5 ) {
+        l( 'error', 'plugin name must be set in config before adding actions' );
+        return;
+    }
+
     my $tt = Template->new(
         {   INCLUDE_PATH => asset_dir('templates'),
             START_TAG    => '<%',
@@ -71,13 +79,11 @@ sub _add_action {
         l( 'error', $Template::ERROR ) and return;
     }
 
-    my $metadata = metadata_from_env();
-    my $action   = resolve( $opts{type}, sub { choose( [qw(admin configure report tool)] ) } );
+    my $action = resolve( $opts{type}, sub { choose( [qw(admin configure report tool)] ) } );
 
-    my $cwd        = cwd;
-    my $components = [ split /::/smx, $metadata->{name} ];
-    my $name       = join q{/}, $components->@*;
-    my $path       = path("$cwd/$name");
+    my $cwd  = cwd;
+    my $name = join q{/}, $components->@*;
+    my $path = path("$cwd/$name");
 
     my $source = $action eq 'configure' ? 'sites/configure.tt' : 'sites/action.tt';
     $tt->process(

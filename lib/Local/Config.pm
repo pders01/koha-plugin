@@ -170,7 +170,10 @@ sub _load_yaml {
 sub _save_yaml {
     my ( $data, $path ) = @_;
     my $yaml = YAML::Tiny->new($data);
-    $yaml->write($path);
+    if ( !$yaml->write($path) ) {
+        l( 'error', "failed to write $path: " . YAML::Tiny->errstr );
+        return;
+    }
     return 1;
 }
 

@@ -57,6 +57,7 @@ my @command = (
     '-M', 'Local::Command::Init',
     '-M', 'Local::Command::Add',
     '-M', 'Local::Command::Increment',
+    '-M', 'Local::Command::Check',
     '-M', 'Local::Config',
 
     # CPAN dependencies used across all commands

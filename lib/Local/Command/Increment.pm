@@ -134,7 +134,7 @@ sub _update_dotenv_legacy {
         }
     }
 
-    return $dotenv->spew_utf8( join "\n", $lines->@*, "\n" );
+    return $dotenv->spew_utf8( join( "\n", $lines->@* ) . "\n" );
 }
 
 sub _update_package_json {
