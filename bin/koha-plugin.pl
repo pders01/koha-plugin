@@ -24,6 +24,7 @@ BEGIN {
 
 use Local::Command::Init      qw( run_init );
 use Local::Command::Add       qw( run_add );
+use Local::Command::Check     qw( run_check );
 use Local::Command::Increment qw( run_increment );
 use Local::Config             qw( load_config find_config config_to_env migrate_from_dotenv );
 use Local::Util               qw( l asset_dir );
@@ -47,6 +48,7 @@ my %COMMANDS = (
     'ktd'         => \&_cmd_ktd,
     'update-meta' => \&_cmd_update_meta,
     'migrate'     => \&_cmd_migrate,
+    'check'       => \&_cmd_check,
 );
 
 if ( $command eq '' || $command eq '--help' || $command eq '-h' ) {
@@ -92,6 +94,7 @@ Commands:
     ktd [container] [binary]    Deploy to KTD container
     update-meta                 Update the koha-plugin repository
     migrate [format]            Migrate .env to config file (yml or json; default: yml)
+    check                       Validate plugin for common issues
 
 Options:
     --version, -v               Show version
@@ -221,6 +224,11 @@ sub _cmd_migrate {
     if ($result) {
         say "Migration complete: $result";
     }
+}
+
+sub _cmd_check {
+    my $ok = run_check();
+    exit( $ok ? 0 : 1 );
 }
 
 # --- Helpers ---
