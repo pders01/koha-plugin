@@ -6,7 +6,9 @@
 
 <body>
     [% WRAPPER 'header.inc' %]
-        <% IF action == 'admin' %>[% INCLUDE 'prefs-admin-search.inc' %]<% END %>
+        <% IF action == 'admin' %>
+            [% INCLUDE 'prefs-admin-search.inc' %]
+        <% END %>
     [% END %]
 
     <nav aria-label="breadcrumb" id="breadcrumbs">
@@ -14,9 +16,9 @@
             <li class="breadcrumb-item"><a href="/cgi-bin/koha/mainpage.pl">Home</a></li>
             <li class="breadcrumb-item"><a href="/cgi-bin/koha/plugins/plugins-home.pl">Plugins</a></li>
             <li class="breadcrumb-item"><a href="#"><% project %></a></li>
-            <li class="breadcrumb-item"><a href="#"><% action | capitalize %></a></li>
+            <li class="breadcrumb-item active"><% action | capitalize %></li>
         </ol>
-    </div>
+    </nav>
 
     <div class="main container-fluid">
         <div class="row">

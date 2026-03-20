@@ -39,7 +39,14 @@ ArrayRef of Koha::Plugins::Tab objects (each with title and content)
 =cut
 
 sub intranet_catalog_biblio_tab {
-    my $tabs;
+    my ( $self, $args ) = @_;
 
-    return $tabs;
+    # my $biblionumber = $args->{biblionumber};
+    # push @tabs, Koha::Plugins::Tab->new({
+    #     title   => 'My Tab',
+    #     content => '<p>Custom content here</p>',
+    # });
+
+    my @tabs;
+    return \@tabs;
 }

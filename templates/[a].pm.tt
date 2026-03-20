@@ -2,6 +2,10 @@ package Koha::Plugin::[% tld %]::[% org %]::[% project %] v[% version %];
 
 use base qw(Koha::Plugins::Base);
 
+[% IF api || static %]
+use JSON qw( decode_json );
+[% END %]
+
 our $metadata = {
 [% metadata %]
 };

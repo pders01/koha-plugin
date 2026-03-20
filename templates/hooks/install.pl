@@ -43,5 +43,14 @@ Boolean (true on success, false on failure)
 sub install() {
     my ( $self, $args ) = @_;
 
-    return;
+    # Example: create a custom table
+    # my $dbh = C4::Context->dbh;
+    # $dbh->do(q{
+    #     CREATE TABLE IF NOT EXISTS plugin_example (
+    #         id INT AUTO_INCREMENT PRIMARY KEY,
+    #         name VARCHAR(255) NOT NULL
+    #     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    # });
+
+    return 1;
 }
