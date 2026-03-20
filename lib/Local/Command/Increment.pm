@@ -9,7 +9,8 @@ use List::Util qw( none );
 use Path::Tiny qw( path );
 use Readonly   qw( Readonly );
 
-use Local::Util qw( l );
+use Local::Config qw( load_config save_config find_config );
+use Local::Util   qw( l );
 
 use Exporter 'import';
 
@@ -53,8 +54,8 @@ sub run_increment {
     return if !$components;
 
     my $new_version = _join_components($components);
-    if ( !_update_dotenv($new_version) ) {
-        l( 'error', 'Updating PLUGIN_VERSION in .env failed' ) and return;
+    if ( !_update_config($new_version) ) {
+        l( 'error', 'Updating version in config failed' ) and return;
     }
 
     if ( !_update_package_json($new_version) ) {
@@ -87,13 +88,36 @@ sub _incremented_components {
     return $clone;
 }
 
-sub _update_dotenv {
+sub _update_config {
+    my ($new_version) = @_;
+
+    my $config_path = find_config();
+
+    # Fall back to legacy .env if no config file found
+    if ( !$config_path ) {
+        return _update_dotenv_legacy($new_version);
+    }
+
+    my $config = load_config($config_path);
+    if ( !$config ) {
+        l( 'error', "failed to load config from $config_path" ) and return 0;
+    }
+
+    $config->{version}      = $new_version;
+    $config->{date_updated} = DateTime->now->ymd(q{-});
+
+    return save_config( $config, $config_path );
+}
+
+sub _update_dotenv_legacy {
     my ($new_version) = @_;
 
     my $dotenv = path('.env');
     if ( !$dotenv->exists ) {
-        l( 'error', '.env not found, aborting...' ) and return 0;
+        l( 'error', 'no config file or .env found, aborting...' ) and return 0;
     }
+
+    l( 'warning', 'updating legacy .env file; consider running: koha-plugin migrate' );
 
     my $lines           = [ $dotenv->lines_utf8( { chomp => 1 } ) ];
     my $version_updated = 0;

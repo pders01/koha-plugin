@@ -1,0 +1,184 @@
+package Local::Config;
+
+use strict;
+use warnings;
+
+use Carp       qw( croak );
+use JSON       qw( decode_json encode_json );
+use YAML::Tiny ();
+
+use Local::Util qw( l );
+
+use Exporter 'import';
+
+our @EXPORT_OK = qw(
+    load_config
+    save_config
+    find_config
+    migrate_from_dotenv
+    config_to_env
+);
+
+my @CONFIG_NAMES = qw(
+    koha-plugin.yml
+    koha-plugin.yaml
+    koha-plugin.json
+);
+
+my @FIELDS = qw(
+    name
+    author
+    version
+    description
+    release_filename
+    static_dir_name
+    date_authored
+    date_updated
+    min_koha_version
+    max_koha_version
+);
+
+sub find_config {
+    for my $name (@CONFIG_NAMES) {
+        return $name if -e $name;
+    }
+    return;
+}
+
+sub load_config {
+    my ($path) = @_;
+    $path //= find_config();
+
+    if ( !$path || !-e $path ) {
+        return;
+    }
+
+    if ( $path =~ /[.]ya?ml$/smx ) {
+        return _load_yaml($path);
+    }
+    elsif ( $path =~ /[.]json$/smx ) {
+        return _load_json($path);
+    }
+
+    l( 'error', "unsupported config format: $path" );
+    return;
+}
+
+sub save_config {
+    my ( $data, $path ) = @_;
+    $path //= find_config();
+
+    if ( !$path ) {
+        l( 'error', 'no config file found to save to' );
+        return;
+    }
+
+    if ( $path =~ /[.]ya?ml$/smx ) {
+        return _save_yaml( $data, $path );
+    }
+    elsif ( $path =~ /[.]json$/smx ) {
+        return _save_json( $data, $path );
+    }
+
+    l( 'error', "unsupported config format: $path" );
+    return;
+}
+
+sub config_to_env {
+    my ($config) = @_;
+    return unless $config;
+
+    for my $field (@FIELDS) {
+        my $env_key = 'PLUGIN_' . uc $field;
+        $ENV{$env_key} = $config->{$field} // q{};
+    }
+    return 1;
+}
+
+sub migrate_from_dotenv {
+    my ($target_format) = @_;
+    $target_format //= 'yml';
+
+    if ( !-e '.env' ) {
+        l( 'error', '.env file not found' );
+        return;
+    }
+
+    my $config = _parse_dotenv('.env');
+
+    my $target = "koha-plugin.$target_format";
+    if ( -e $target ) {
+        l( 'error', "$target already exists, aborting migration" );
+        return;
+    }
+
+    save_config( $config, $target );
+    l( 'info', "migrated .env to $target" );
+    l( 'info', 'you can now remove .env and update your justfile' );
+
+    return $target;
+}
+
+# --- Private ---
+
+sub _parse_dotenv {
+    my ($path) = @_;
+    my %config;
+
+    open my $fh, '<', $path or croak "Cannot open $path: $!";
+    while ( my $line = <$fh> ) {
+        chomp $line;
+        next if $line =~ /^\s*#/;
+        next if $line =~ /^\s*$/;
+        if ( $line =~ /^\s*PLUGIN_(\w+)=(.*)$/smx ) {
+            my ( $key, $value ) = ( lc $1, $2 );
+            # Strip surrounding quotes
+            $value =~ s/^["']|["']$//g;
+            $config{$key} = $value;
+        }
+    }
+    close $fh;
+
+    # Normalize key names
+    if ( exists $config{static_dirs} ) {
+        $config{static_dir_name} //= delete $config{static_dirs};
+    }
+
+    return \%config;
+}
+
+sub _load_yaml {
+    my ($path) = @_;
+    my $yaml = YAML::Tiny->read($path);
+    if ( !$yaml ) {
+        l( 'error', "failed to read $path: " . YAML::Tiny->errstr );
+        return;
+    }
+    return $yaml->[0];
+}
+
+sub _save_yaml {
+    my ( $data, $path ) = @_;
+    my $yaml = YAML::Tiny->new($data);
+    $yaml->write($path);
+    return 1;
+}
+
+sub _load_json {
+    my ($path) = @_;
+    open my $fh, '<', $path or croak "Cannot open $path: $!";
+    my $content = do { local $/; <$fh> };
+    close $fh;
+    return decode_json($content);
+}
+
+sub _save_json {
+    my ( $data, $path ) = @_;
+    my $j = JSON->new->utf8->pretty->canonical;
+    open my $fh, '>', $path or croak "Cannot open $path for writing: $!";
+    print {$fh} $j->encode($data) or croak "Cannot write to $path: $!";
+    close $fh;
+    return 1;
+}
+
+1;

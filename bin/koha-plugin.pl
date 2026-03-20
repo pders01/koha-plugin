@@ -18,12 +18,13 @@ BEGIN {
 use Local::Command::Init      qw( run_init );
 use Local::Command::Add       qw( run_add );
 use Local::Command::Increment qw( run_increment );
+use Local::Config             qw( load_config find_config config_to_env migrate_from_dotenv );
 use Local::Util               qw( asset_dir );
 
 my $VERSION = 'v1.0.0';
 
-# Load .env: CWD first, then PAR-bundled fallback
-_load_env_file();
+# Load config: YAML/JSON config file, .env fallback, PAR-bundled last
+_load_config();
 
 my $command = shift @ARGV // '';
 
@@ -38,6 +39,7 @@ my %COMMANDS = (
     'staticapi'   => \&_cmd_staticapi,
     'ktd'         => \&_cmd_ktd,
     'update-meta' => \&_cmd_update_meta,
+    'migrate'     => \&_cmd_migrate,
 );
 
 if ( $command eq '' || $command eq '--help' || $command eq '-h' ) {
@@ -77,6 +79,7 @@ Commands:
     staticapi                   Update staticapi.json
     ktd [container] [binary]    Deploy to KTD container
     update-meta                 Update the koha-plugin repository
+    migrate [format]            Migrate .env to config file (yml or json; default: yml)
 
 Options:
     --version, -v               Show version
@@ -166,12 +169,48 @@ sub _cmd_update_meta {
     say 'Metadata updated successfully';
 }
 
+sub _cmd_migrate {
+    my ($format) = @_;
+    $format //= 'yml';
+
+    if ( $format !~ /^(ya?ml|json)$/smx ) {
+        say "Unsupported format: $format (use yml or json)";
+        exit 1;
+    }
+
+    my $result = migrate_from_dotenv($format);
+    if ($result) {
+        say "Migration complete: $result";
+    }
+}
+
 # --- Helpers ---
 
-sub _load_env_file {
-    # Prefer CWD .env, fall back to PAR-bundled .env
-    my $env_file = -e '.env' ? '.env' : asset_dir('.env');
-    return unless -e $env_file;
+sub _load_config {
+    # 1. Try config file (koha-plugin.yml, koha-plugin.yaml, koha-plugin.json)
+    my $config = load_config();
+    if ($config) {
+        config_to_env($config);
+        return;
+    }
+
+    # 2. Fall back to legacy .env
+    if ( -e '.env' ) {
+        _load_dotenv_legacy('.env');
+        return;
+    }
+
+    # 3. In PAR mode, try bundled .env as last resort
+    my $par_env = asset_dir('.env');
+    if ( $par_env ne '.env' && -e $par_env ) {
+        _load_dotenv_legacy($par_env);
+    }
+
+    return;
+}
+
+sub _load_dotenv_legacy {
+    my ($env_file) = @_;
 
     open my $fh, '<', $env_file or die "Cannot open $env_file: $!";
     while ( my $line = <$fh> ) {
