@@ -19,13 +19,10 @@ use Local::Util qw( l );
 our $VERSION = '0.0.1';
 
 Readonly my $CONST => {
-    INDENTATION              => 4,
     INDEX_MAJOR              => 0,
     INDEX_MINOR              => 1,
     INDEX_PATCH              => 2,
     LENGTH_SEMVER_COMPONENTS => 3,
-    OFFSET_DATE_UPDATED      => 5,
-    OFFSET_VERSION           => 10,
 };
 
 my $opts = {
@@ -124,9 +121,9 @@ sub _update_package_json($new_version) {    ## no critic qw(ValuesAndExpressions
     my $data     = decode_json($contents);
 
     $data->{version} = $new_version;
-    $contents = encode_json($data);
 
-    return $package_json->spew_utf8($contents);
+    my $j = JSON->new->utf8->pretty->canonical;
+    return $package_json->spew_utf8( $j->encode($data) );
 }
 
 sub _update_base_module( $new_version, $name ) {    ## no critic qw(ValuesAndExpressions::RequireInterpolationOfMetachars)
@@ -150,21 +147,19 @@ sub _update_base_module( $new_version, $name ) {    ## no critic qw(ValuesAndExp
             $in_metadata = 1;
         }
 
-        # Only handle lines inside $metadata block
+        # Only handle lines inside $metadata block — preserve user's formatting
         if ($in_metadata) {
-            if ( $line =~ /\s*'?version'?\s*=>\s*'[\d]+[.][\d]+[.][\d]+',?/smx ) {
-                $line = join q{}, q{ } x $CONST->{'INDENTATION'}, q{'version'}, q{ } x $CONST->{'OFFSET_VERSION'},
-                    qq{=> '$new_version',};
+            if ( $line =~ /^(\s*'?version'?\s*=>\s*')[\d]+[.][\d]+[.][\d]+(',?)$/smx ) {
+                $line = "${1}${new_version}${2}";
             }
 
-            if ( $line =~ /\s*'?date_updated'?\s*=>\s*'[\d]+-[\d]+-[\d]+',?/smx ) {
+            if ( $line =~ /^(\s*'?date_updated'?\s*=>\s*')[\d]+-[\d]+-[\d]+(',?)$/smx ) {
                 my $date = DateTime->now->ymd(q{-});
-                $line = join q{}, q{ } x $CONST->{'INDENTATION'}, q{'date_updated'}, q{ } x $CONST->{'OFFSET_DATE_UPDATED'},
-                    qq{=> '$date',};
+                $line = "${1}${date}${2}";
             }
 
             if ( $line =~ /\s*};\s*/smx ) {
-                $in_metadata = 0;    # Ensure we stop processing if we hit the end of $metadata
+                $in_metadata = 0;
             }
         }
 

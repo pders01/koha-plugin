@@ -15,13 +15,16 @@ our @EXPORT_OK = qw( l asset_dir );
 
 sub l {
     my ( $type, $message ) = @_;
+    $type //= 'info';
 
-    print {
+    my %messages = (
         info    => colored( "$message\n",          'bright_cyan' ),
         warning => colored( "warning: $message\n", 'bright_yellow' ),
         error   => colored( "error: $message\n",   'bright_red' ),
-    }->{ $type // 'info' }
-        or croak;
+    );
+
+    my $fh = ( $type eq 'info' ) ? *STDOUT : *STDERR;
+    print {$fh} $messages{$type} or croak;
 
     return 1;
 }
@@ -29,7 +32,8 @@ sub l {
 sub asset_dir {
     my ($subdir) = @_;
 
-    my $base = $ENV{PAR_TEMP}
+    my $base
+        = $ENV{PAR_TEMP}
         ? File::Spec->catdir( $ENV{PAR_TEMP}, 'inc' )
         : q{.};
 
