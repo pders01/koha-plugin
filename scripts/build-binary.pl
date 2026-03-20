@@ -12,7 +12,7 @@ my $project_dir = dirname($script_dir);
 my $bin_dir     = catdir( $project_dir, 'bin' );
 my $dist_dir    = catdir( $project_dir, 'dist' );
 my $local_bin   = catdir( $project_dir, 'local', 'bin' );
-my $script_path = catfile( $bin_dir, 'koha-plugin.pl' );
+my $script_path = catfile( $bin_dir,  'koha-plugin.pl' );
 my $output_path = catfile( $dist_dir, 'koha-plugin' );
 
 # Resolve pp: try carton's local/bin, then PATH
@@ -24,7 +24,7 @@ if ( !-x $pp ) {
 # Add project lib paths to PERL5LIB so pp can find all modules.
 # Carton's local/lib/perl5 is included if present; deps installed
 # via cpanm, local::lib, or system packages are found via existing PERL5LIB/INC.
-my @extra_lib = ( catdir( $project_dir, 'lib' ) );
+my @extra_lib  = ( catdir( $project_dir, 'lib' ) );
 my $carton_lib = catdir( $project_dir, 'local', 'lib', 'perl5' );
 push @extra_lib, $carton_lib if -d $carton_lib;
 
@@ -36,9 +36,9 @@ unless ( -d $dist_dir ) {
 
 # PAR asset paths use "source;target" to control extraction layout
 my @assets = (
-    catdir( $project_dir, 'scripts' )   . ';scripts',
+    catdir( $project_dir, 'scripts' ) . ';scripts',
     catdir( $project_dir, 'templates' ) . ';templates',
-    catdir( $project_dir, 'lib' )       . ';lib',
+    catdir( $project_dir, 'lib' ) . ';lib',
 );
 
 my @inc_paths = ( catdir( $project_dir, 'lib' ) );

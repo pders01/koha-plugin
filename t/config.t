@@ -24,10 +24,10 @@ subtest 'YAML save and load' => sub {
     };
 
     ok( save_config( $data, $path ), 'save_config YAML succeeds' );
-    ok( -e $path, 'file created' );
+    ok( -e $path,                    'file created' );
 
     my $loaded = load_config($path);
-    is( ref $loaded, 'HASH', 'load_config returns hashref' );
+    is( ref $loaded,        'HASH',           'load_config returns hashref' );
     is( $loaded->{name},    $data->{name},    'name round-trips' );
     is( $loaded->{version}, $data->{version}, 'version round-trips' );
     is( $loaded->{author},  $data->{author},  'author round-trips' );
@@ -44,10 +44,10 @@ subtest 'JSON save and load' => sub {
     };
 
     ok( save_config( $data, $path ), 'save_config JSON succeeds' );
-    ok( -e $path, 'file created' );
+    ok( -e $path,                    'file created' );
 
     my $loaded = load_config($path);
-    is( ref $loaded, 'HASH', 'load_config returns hashref' );
+    is( ref $loaded,            'HASH',               'load_config returns hashref' );
     is( $loaded->{name},        $data->{name},        'name round-trips' );
     is( $loaded->{version},     $data->{version},     'version round-trips' );
     is( $loaded->{description}, $data->{description}, 'description round-trips' );
@@ -81,6 +81,7 @@ subtest 'config_to_env handles missing fields' => sub {
 # --- find_config ---
 
 subtest 'find_config detects config files' => sub {
+
     # Should not find anything in our temp dir
     my $orig = Cwd::getcwd();
     chdir $tmpdir or die "Cannot chdir: $!";
@@ -132,10 +133,10 @@ DOTENV
     ok( -e 'koha-plugin.yml', 'YAML config created' );
 
     my $config = load_config('koha-plugin.yml');
-    is( $config->{name},    'Koha::Plugin::Com::Migrate::Test', 'name migrated' );
-    is( $config->{version}, '1.5.0',                            'version migrated' );
-    is( $config->{author},  'Migrator',                         'author migrated' );
-    is( $config->{description}, 'A migrated plugin',            'description migrated (quotes stripped)' );
+    is( $config->{name},        'Koha::Plugin::Com::Migrate::Test', 'name migrated' );
+    is( $config->{version},     '1.5.0',                            'version migrated' );
+    is( $config->{author},      'Migrator',                         'author migrated' );
+    is( $config->{description}, 'A migrated plugin',                'description migrated (quotes stripped)' );
 
     # Should refuse to overwrite
     my $result2 = migrate_from_dotenv('yml');

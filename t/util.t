@@ -14,9 +14,9 @@ use Local::Util qw( l asset_dir );
 subtest 'asset_dir without PAR_TEMP' => sub {
     local $ENV{PAR_TEMP} = undef;
 
-    is( asset_dir(),            '.',          'base is CWD' );
-    is( asset_dir('templates'), 'templates',  'subdir appended' );
-    is( asset_dir('scripts'),   'scripts',    'scripts subdir' );
+    is( asset_dir(),            '.',         'base is CWD' );
+    is( asset_dir('templates'), 'templates', 'subdir appended' );
+    is( asset_dir('scripts'),   'scripts',   'scripts subdir' );
 };
 
 subtest 'asset_dir with PAR_TEMP' => sub {
@@ -28,19 +28,23 @@ subtest 'asset_dir with PAR_TEMP' => sub {
 
 # --- l (logging) ---
 
-subtest 'l returns true' => sub {
-    # Capture STDOUT to avoid noise
-    my $output = q{};
+subtest 'l returns true and routes to correct streams' => sub {
+    my $stdout = q{};
+    my $stderr = q{};
     {
         local *STDOUT;
-        open STDOUT, '>', \$output or die "Cannot redirect STDOUT: $!";
+        local *STDERR;
+        open STDOUT, '>', \$stdout or die "Cannot redirect STDOUT: $!";
+        open STDERR, '>', \$stderr or die "Cannot redirect STDERR: $!";
         ok( l( 'info',    'test info' ),    'info returns true' );
         ok( l( 'warning', 'test warning' ), 'warning returns true' );
         ok( l( 'error',   'test error' ),   'error returns true' );
     }
-    like( $output, qr/test info/,    'info message printed' );
-    like( $output, qr/test warning/, 'warning message printed' );
-    like( $output, qr/test error/,   'error message printed' );
+    like( $stdout, qr/test info/,    'info goes to STDOUT' );
+    like( $stderr, qr/test warning/, 'warning goes to STDERR' );
+    like( $stderr, qr/test error/,   'error goes to STDERR' );
+    unlike( $stdout, qr/test warning/, 'warning not on STDOUT' );
+    unlike( $stdout, qr/test error/,   'error not on STDOUT' );
 };
 
 done_testing();

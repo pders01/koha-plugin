@@ -19,7 +19,7 @@ subtest 'metadata_from_env reads PLUGIN_ vars' => sub {
     delete $ENV{PLUGIN_DESCRIPTION};
 
     my $m = metadata_from_env();
-    is( ref $m, 'HASH', 'returns hashref' );
+    is( ref $m,        'HASH',                             'returns hashref' );
     is( $m->{name},    'Koha::Plugin::Com::Example::Test', 'name from env' );
     is( $m->{version}, '1.2.3',                            'version from env' );
     is( $m->{author},  'Tester',                           'author from env' );
@@ -79,9 +79,9 @@ subtest 'validate_metadata fails with wrong name format' => sub {
 
 subtest 'validate_metadata rewrites "today" dates' => sub {
     my $m = {
-        name             => 'Koha::Plugin::Com::Example::Test',
-        date_authored    => 'today',
-        date_updated     => 'today',
+        name          => 'Koha::Plugin::Com::Example::Test',
+        date_authored => 'today',
+        date_updated  => 'today',
     };
 
     my $output = q{};
@@ -101,7 +101,7 @@ subtest 'stringify_metadata produces Data::Dumper output without braces' => sub 
 
     unlike( $s, qr/^[{]/, 'no leading brace' );
     unlike( $s, qr/[}]$/, 'no trailing brace' );
-    like( $s, qr/'name'/, 'contains name key' );
+    like( $s, qr/'name'/,    'contains name key' );
     like( $s, qr/'version'/, 'contains version key' );
 };
 

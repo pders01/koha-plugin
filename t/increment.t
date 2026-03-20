@@ -10,7 +10,7 @@ use lib "$RealBin/../lib";
 BEGIN { my $l = "$RealBin/../local/lib/perl5"; unshift @INC, $l if -d $l }
 
 use Local::Command::Increment qw( run_increment );
-use Local::Config qw( save_config load_config );
+use Local::Config             qw( save_config load_config );
 
 my $tmpdir = tempdir( CLEANUP => 1 );
 
@@ -29,10 +29,7 @@ subtest 'increment patch version via config' => sub {
     my $orig = Cwd::getcwd();
     chdir $tmpdir or die "Cannot chdir: $!";
 
-    save_config(
-        { name => 'Koha::Plugin::Com::Example::Inc', version => '1.0.0' },
-        'koha-plugin.yml',
-    );
+    save_config( { name => 'Koha::Plugin::Com::Example::Inc', version => '1.0.0' }, 'koha-plugin.yml', );
 
     # Create a minimal base module
     my $mod_dir = File::Spec->catdir( $tmpdir, 'Koha', 'Plugin', 'Com', 'Example' );
@@ -50,12 +47,14 @@ our $metadata = {
 MODULE
     close $fh;
 
-    my $result = _quiet { run_increment(
-        version => '1.0.0',
-        name    => 'Koha::Plugin::Com::Example::Inc',
-        type    => 'patch',
-        times   => 1,
-    ) };
+    my $result = _quiet {
+        run_increment(
+            version => '1.0.0',
+            name    => 'Koha::Plugin::Com::Example::Inc',
+            type    => 'patch',
+            times   => 1,
+        )
+    };
 
     ok( $result, 'increment returns true' );
 
@@ -78,10 +77,7 @@ subtest 'increment minor version multiple times' => sub {
     my $orig = Cwd::getcwd();
     chdir $tmpdir or die "Cannot chdir: $!";
 
-    save_config(
-        { name => 'Koha::Plugin::Com::Example::Inc', version => '1.0.0' },
-        'koha-plugin.yml',
-    );
+    save_config( { name => 'Koha::Plugin::Com::Example::Inc', version => '1.0.0' }, 'koha-plugin.yml', );
 
     # Recreate base module
     my $mod_path = File::Spec->catfile( $tmpdir, 'Koha', 'Plugin', 'Com', 'Example', 'Inc.pm' );
@@ -96,12 +92,14 @@ our $metadata = {
 MODULE
     close $fh;
 
-    my $result = _quiet { run_increment(
-        version => '1.0.0',
-        name    => 'Koha::Plugin::Com::Example::Inc',
-        type    => 'minor',
-        times   => 3,
-    ) };
+    my $result = _quiet {
+        run_increment(
+            version => '1.0.0',
+            name    => 'Koha::Plugin::Com::Example::Inc',
+            type    => 'minor',
+            times   => 3,
+        )
+    };
 
     ok( $result, 'increment returns true' );
 
@@ -113,41 +111,49 @@ MODULE
 };
 
 subtest 'increment fails with invalid version' => sub {
-    my $result = _quiet { run_increment(
-        version => 'not-semver',
-        name    => 'Koha::Plugin::Com::Example::Inc',
-        type    => 'patch',
-        times   => 1,
-    ) };
+    my $result = _quiet {
+        run_increment(
+            version => 'not-semver',
+            name    => 'Koha::Plugin::Com::Example::Inc',
+            type    => 'patch',
+            times   => 1,
+        )
+    };
 
     ok( !$result, 'rejects invalid semver' );
 };
 
 subtest 'increment fails with invalid type' => sub {
-    my $result = _quiet { run_increment(
-        version => '1.0.0',
-        name    => 'Koha::Plugin::Com::Example::Inc',
-        type    => 'supermajor',
-        times   => 1,
-    ) };
+    my $result = _quiet {
+        run_increment(
+            version => '1.0.0',
+            name    => 'Koha::Plugin::Com::Example::Inc',
+            type    => 'supermajor',
+            times   => 1,
+        )
+    };
 
     ok( !$result, 'rejects invalid type' );
 };
 
 subtest 'increment fails without version' => sub {
-    my $result = _quiet { run_increment(
-        name => 'Koha::Plugin::Com::Example::Inc',
-        type => 'patch',
-    ) };
+    my $result = _quiet {
+        run_increment(
+            name => 'Koha::Plugin::Com::Example::Inc',
+            type => 'patch',
+        )
+    };
 
     ok( !$result, 'fails without version' );
 };
 
 subtest 'increment fails without name' => sub {
-    my $result = _quiet { run_increment(
-        version => '1.0.0',
-        type    => 'patch',
-    ) };
+    my $result = _quiet {
+        run_increment(
+            version => '1.0.0',
+            type    => 'patch',
+        )
+    };
 
     ok( !$result, 'fails without name' );
 };
