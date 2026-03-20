@@ -88,6 +88,7 @@ Commands:
         migration                 Numbered SQL migration file
         hook                      Add a hook method to an existing plugin module
         background-job            Background job class + registration
+        vue                       Vue island component with vite build
     increment [options]         Increment version (patch, minor, major)
     package                     Create a .kpz file
     clean                       Remove Koha/ directory and package.json
@@ -136,6 +137,7 @@ sub _cmd_add {
         l( 'info',  '  migration  - SQL migration file (--description)' );
         l( 'info',  '  hook       - Add hook to existing plugin (--type <hook_name>)' );
         l( 'info',  '  background-job - Job class + registration (--type <job_name>)' );
+        l( 'info',  '  vue            - Vue island with vite (--name <Component> --tag <tag-name>)' );
         exit 1;
     }
 
@@ -151,6 +153,8 @@ sub _cmd_add {
         'controller=s'  => \$opts{controller},
         'permission=s'  => \$opts{permission},
         'description=s' => \$opts{description},
+        'name=s'        => \$opts{name},
+        'tag=s'         => \$opts{tag},
     );
 
     # Remove undef entries so handlers can distinguish "not provided" from "empty"

@@ -31,6 +31,7 @@ my %COMPONENTS = (
     migration        => \&_add_migration,
     hook             => \&_add_hook,
     'background-job' => \&_add_background_job,
+    vue              => \&_add_vue,
 );
 
 sub run_add {
@@ -734,6 +735,212 @@ sub enqueue {
 
 1;
 JOB
+}
+
+sub _add_vue {
+    my (%opts)     = @_;
+    my $metadata   = metadata_from_env();
+    my $components = [ split /::/smx, $metadata->{name} // q{} ];
+
+    if ( @{$components} != 5 ) {
+        l( 'error', 'plugin name must be set in config before adding vue components' );
+        return;
+    }
+
+    my $project    = $components->@[4];
+    my $plugin_dir = path( join q{/}, $components->@* );
+
+    my $component_name = resolve(
+        $opts{name},
+        sub {
+            my $term = Term::ReadLine->new('koha-plugin add vue');
+            $term->get_reply( prompt => 'Component name (e.g. NotesPanel):', default => "${project}Widget" );
+        }
+    );
+
+    if ( !$component_name || $component_name !~ /^[A-Z][A-Za-z0-9]*$/smx ) {
+        l( 'error', 'component name must be PascalCase (e.g. NotesPanel)' );
+        return;
+    }
+
+    # Derive tag name: NotesPanel -> plugin-notes-panel
+    my $default_tag = 'plugin-' . lc( join '-', ( $component_name =~ /([A-Z][a-z0-9]*)/g ) );
+    my $tag_name    = resolve(
+        $opts{tag},
+        sub {
+            my $term = Term::ReadLine->new('koha-plugin add vue');
+            $term->get_reply( prompt => 'Custom element tag name:', default => $default_tag );
+        }
+    );
+
+    if ( !$tag_name || $tag_name !~ /^[a-z][a-z0-9]*-[a-z0-9-]*$/smx ) {
+        l( 'error', 'tag name must be lowercase with a hyphen (e.g. plugin-notes-panel)' );
+        return;
+    }
+
+    # Create directories
+    my $src_dir    = path('src/components');
+    my $static_dir = path("$plugin_dir/static/dist");
+    $src_dir->mkpath;
+    $static_dir->mkpath;
+
+    # Write Vue SFC
+    my $vue_file = path("src/components/$component_name.vue");
+    if ( $vue_file->exists ) {
+        l( 'warning', "$vue_file already exists, skipping" );
+    }
+    else {
+        $vue_file->spew_utf8( _vue_sfc_template( $component_name, $tag_name ) );
+        l( 'info', "created $vue_file" );
+    }
+
+    # Write entry point
+    my $entry = path('src/main.js');
+    if ( $entry->exists ) {
+        l( 'warning', "src/main.js already exists, skipping" );
+    }
+    else {
+        $entry->spew_utf8( _vue_entry_template($component_name) );
+        l( 'info', 'created src/main.js' );
+    }
+
+    # Write vite config
+    my $vite_config = path('vite.config.js');
+    if ( $vite_config->exists ) {
+        l( 'warning', 'vite.config.js already exists, skipping' );
+    }
+    else {
+        my $out_dir = "$plugin_dir/static/dist";
+        $vite_config->spew_utf8( _vite_config_template( $component_name, $out_dir ) );
+        l( 'info', 'created vite.config.js' );
+    }
+
+    # Write or update package.json
+    my $pkg = path('package.json');
+    if ( $pkg->exists ) {
+        my $json = decode_json( $pkg->slurp_utf8 );
+        $json->{scripts}{'build'} //= 'vite build';
+        $json->{scripts}{'dev'}   //= 'vite build --watch';
+        my $j = json_encoder();
+        $pkg->spew_utf8( $j->encode($json) );
+        l( 'info', 'updated package.json with build scripts' );
+    }
+    else {
+        my $j        = json_encoder();
+        my $pkg_data = {
+            name    => lc "koha-plugin-$project",
+            version => $metadata->{version} // '0.1.0',
+            private => JSON::true,
+            type    => 'module',
+            scripts => {
+                build => 'vite build',
+                dev   => 'vite build --watch',
+            },
+            dependencies    => { vue => '^3.5.0', },
+            devDependencies => {
+                vite                  => '^6.0.0',
+                "\@vitejs/plugin-vue" => '^5.0.0',
+            },
+        };
+        $pkg->spew_utf8( $j->encode($pkg_data) );
+        l( 'info', 'created package.json' );
+    }
+
+    # Print next steps
+    my $api_ns = lc $project;
+    l( 'info', 'next steps:' );
+    l( 'info', "  1. npm install" );
+    l( 'info', "  2. edit src/components/$component_name.vue" );
+    l( 'info', "  3. npm run build" );
+    l( 'info', "  4. register the island in your intranet_js hook:" );
+    l( 'info', "     registerIsland(\"$tag_name\", {" );
+    l( 'info', "       importFn: () => import(\"/api/v1/contrib/$api_ns/static/dist/$component_name.js\")," );
+    l( 'info', "       config: { stores: [] }," );
+    l( 'info', "     });" );
+
+    return 1;
+}
+
+sub _vue_sfc_template {
+    my ( $name, $tag ) = @_;
+
+    return <<"VUE";
+<script setup>
+defineProps({
+  greeting: {
+    type: String,
+    default: "Hello from $name!",
+  },
+});
+</script>
+
+<template>
+  <div class="plugin-island">
+    <h4>$name</h4>
+    <p>{{ greeting }}</p>
+  </div>
+</template>
+
+<style scoped>
+.plugin-island {
+  font-family: inherit;
+  padding: 1.5em;
+  margin: 1em 0;
+  border-left: 4px solid #4caf50;
+  background: #f8fdf8;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.plugin-island h4 {
+  margin: 0 0 0.5em;
+  color: #2e7d32;
+}
+
+.plugin-island p {
+  margin: 0;
+}
+</style>
+VUE
+}
+
+sub _vue_entry_template {
+    my ($name) = @_;
+
+    return <<"ENTRY";
+import $name from "./components/$name.vue";
+export default $name;
+ENTRY
+}
+
+sub _vite_config_template {
+    my ( $name, $out_dir ) = @_;
+
+    return <<"VITE";
+import { defineConfig } from "vite";
+import vue from "\@vitejs/plugin-vue";
+
+export default defineConfig({
+  plugins: [vue()],
+  build: {
+    lib: {
+      entry: "src/main.js",
+      formats: ["es"],
+      fileName: "$name",
+    },
+    outDir: "$out_dir",
+    emptyOutDir: false,
+    rollupOptions: {
+      external: ["vue"],
+      output: {
+        globals: {
+          vue: "Vue",
+        },
+      },
+    },
+  },
+});
+VITE
 }
 
 1;
