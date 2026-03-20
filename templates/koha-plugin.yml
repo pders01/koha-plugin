@@ -1,0 +1,11 @@
+---
+name: "Koha::Plugin::<TLD>::<ORG>::<PROJECT>"
+author: ""
+version: "0.0.1"
+description: ""
+release_filename: ""
+static_dir_name: "static"
+date_authored: "today"
+date_updated: "today"
+min_koha_version: ""
+max_koha_version: ""

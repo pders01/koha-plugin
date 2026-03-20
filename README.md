@@ -54,10 +54,11 @@ Then you can just run `$ just` for an overview of commands in the project root.
 
 You can of course just run the scripts without just. Take a look at the `justfile`.
 
-Before you start, you should copy the env file from templates/env to .env in the project root and customize it (I will soon patch `just init` to prompt for this).
+Before you start, copy a config template to the project root and customize it:
 ```console
-$ cp templates/env .env
+$ cp templates/koha-plugin.yml koha-plugin.yml
 ```
+JSON is also supported (`templates/koha-plugin.json`). If you have a legacy `.env` file, you can migrate it with `koha-plugin migrate yml`.
 
 
 ## License
