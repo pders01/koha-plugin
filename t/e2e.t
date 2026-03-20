@@ -45,7 +45,7 @@ subtest 'full plugin lifecycle' => sub {
     #  file generation steps that init performs)
 
     my $plugin_name = 'Koha::Plugin::Com::Test::E2E';
-    my $config = {
+    my $config      = {
         name             => $plugin_name,
         author           => 'E2E Tester',
         version          => '0.1.0',
@@ -66,7 +66,7 @@ subtest 'full plugin lifecycle' => sub {
 
     my $loaded = load_config('koha-plugin.yml');
     is( $loaded->{name},    $plugin_name, 'config name round-trips' );
-    is( $loaded->{version}, '0.1.0',     'config version round-trips' );
+    is( $loaded->{version}, '0.1.0',      'config version round-trips' );
 
     # Create the plugin directory structure
     my $plugin_dir = 'Koha/Plugin/Com/Test/E2E';
@@ -83,28 +83,29 @@ subtest 'full plugin lifecycle' => sub {
     is( $metadata->{name}, $plugin_name, 'metadata_from_env reads config-populated env' );
 
     my $base_module = 'Koha/Plugin/Com/Test/E2E.pm';
-    my $tt_vars = {
+    my $tt_vars     = {
         tld      => 'Com',
         org      => 'Test',
         project  => 'E2E',
         version  => $config->{version},
         metadata => stringify_metadata($metadata),
+
         # Select a mix of hooks
-        install     => 1,
-        upgrade     => 1,
-        configure   => 1,
-        tool        => 1,
-        api         => 1,
-        static      => 1,
-        intranet_js => 1,
-        opac_head   => 1,
-        cronjob_nightly   => 1,
-        background_tasks  => 1,
+        install             => 1,
+        upgrade             => 1,
+        configure           => 1,
+        tool                => 1,
+        api                 => 1,
+        static              => 1,
+        intranet_js         => 1,
+        opac_head           => 1,
+        cronjob_nightly     => 1,
+        background_tasks    => 1,
         after_biblio_action => 1,
     };
 
     $tt->process( '[a].pm.tt', $tt_vars, $base_module );
-    ok( !$tt->error, 'template processed without error' ) or diag $tt->error;
+    ok( !$tt->error,     'template processed without error' ) or diag $tt->error;
     ok( -e $base_module, 'base module generated' );
 
     # --- Step 2: Verify generated module content ---
@@ -112,24 +113,21 @@ subtest 'full plugin lifecycle' => sub {
     my $content = do { local $/; <$fh> };
     close $fh;
 
-    like( $content, qr/^package Koha::Plugin::Com::Test::E2E v0\.1\.0;/m,
-        'package declaration with version' );
-    like( $content, qr/use base qw\(Koha::Plugins::Base\)/,
-        'inherits from Koha::Plugins::Base' );
-    like( $content, qr/use JSON qw\( decode_json \)/,
-        'JSON imported when api/static selected' );
-    like( $content, qr/sub install/,     'install hook present' );
-    like( $content, qr/sub upgrade/,     'upgrade hook present' );
-    like( $content, qr/sub configure/,   'configure hook present' );
-    like( $content, qr/sub tool/,        'tool hook present' );
-    like( $content, qr/sub api_namespace/, 'api_namespace hook present' );
-    like( $content, qr/sub api_routes/,    'api_routes hook present' );
-    like( $content, qr/sub static_routes/, 'static_routes hook present' );
-    like( $content, qr/sub intranet_js/,   'intranet_js hook present' );
-    like( $content, qr/sub opac_head/,     'opac_head hook present' );
-    like( $content, qr/sub cronjob_nightly/, 'cronjob_nightly hook present' );
-    like( $content, qr/sub background_tasks/, 'background_tasks hook present' );
-    like( $content, qr/sub after_biblio_action/, 'after_biblio_action hook present' );
+    like( $content, qr/^package Koha::Plugin::Com::Test::E2E v0\.1\.0;/m, 'package declaration with version' );
+    like( $content, qr/use base qw\(Koha::Plugins::Base\)/,               'inherits from Koha::Plugins::Base' );
+    like( $content, qr/use Mojo::JSON qw\( decode_json \)/,               'JSON imported when api/static selected' );
+    like( $content, qr/sub install/,                                      'install hook present' );
+    like( $content, qr/sub upgrade/,                                      'upgrade hook present' );
+    like( $content, qr/sub configure/,                                    'configure hook present' );
+    like( $content, qr/sub tool/,                                         'tool hook present' );
+    like( $content, qr/sub api_namespace/,                                'api_namespace hook present' );
+    like( $content, qr/sub api_routes/,                                   'api_routes hook present' );
+    like( $content, qr/sub static_routes/,                                'static_routes hook present' );
+    like( $content, qr/sub intranet_js/,                                  'intranet_js hook present' );
+    like( $content, qr/sub opac_head/,                                    'opac_head hook present' );
+    like( $content, qr/sub cronjob_nightly/,                              'cronjob_nightly hook present' );
+    like( $content, qr/sub background_tasks/,                             'background_tasks hook present' );
+    like( $content, qr/sub after_biblio_action/,                          'after_biblio_action hook present' );
 
     # Verify api_namespace returns the project name, not a literal
     like( $content, qr/return 'E2E'/, 'api_namespace returns interpolated project name' );
@@ -138,15 +136,13 @@ subtest 'full plugin lifecycle' => sub {
     like( $content, qr/return 1;/, 'install returns 1 (success)' );
 
     # Verify JS/CSS hooks reference static files
-    like( $content, qr{/api/v1/contrib/E2E/static/dist/main\.js},
-        'intranet_js references static JS file' );
-    like( $content, qr{/api/v1/contrib/E2E/static/dist/main\.css},
-        'opac_head references static CSS file' );
+    like( $content, qr{/api/v1/contrib/E2E/static/dist/main\.js},  'intranet_js references static JS file' );
+    like( $content, qr{/api/v1/contrib/E2E/static/dist/main\.css}, 'opac_head references static CSS file' );
 
     # Verify configure has store_data pattern
-    like( $content, qr/store_data/, 'configure references store_data' );
+    like( $content, qr/store_data/,    'configure references store_data' );
     like( $content, qr/retrieve_data/, 'configure references retrieve_data' );
-    like( $content, qr/go_home/, 'configure references go_home' );
+    like( $content, qr/go_home/,       'configure references go_home' );
 
     # --- Step 3: Version increment ---
     my $inc_result = _quiet {
@@ -211,25 +207,30 @@ subtest 'api route composition' => sub {
     my $spec = {
         '/widgets' => {
             get => {
-                'x-mojo-to'    => 'Com::Test::E2E::WidgetController#list',
-                operationId    => 'listWidgets',
-                tags           => ['E2E'],
-                produces       => ['application/json'],
-                responses      => { '200' => { description => 'List of widgets', schema => { type => 'object' } } },
+                'x-mojo-to'            => 'Com::Test::E2E::WidgetController#list',
+                operationId            => 'listWidgets',
+                tags                   => ['E2E'],
+                produces               => ['application/json'],
+                responses              => { '200' => { description => 'List of widgets', schema => { type => 'object' } } },
                 'x-koha-authorization' => { permissions => { catalogue => '1' } },
             },
         },
         '/widgets/{widget_id}' => {
             get => {
-                'x-mojo-to'    => 'Com::Test::E2E::WidgetController#get',
-                operationId    => 'getWidget',
-                tags           => ['E2E'],
-                produces       => ['application/json'],
-                parameters     => [
-                    { name => 'widget_id', in => 'path', description => 'widget_id identifier', required => JSON::true, type => 'integer' },
+                'x-mojo-to' => 'Com::Test::E2E::WidgetController#get',
+                operationId => 'getWidget',
+                tags        => ['E2E'],
+                produces    => ['application/json'],
+                parameters  => [
+                    {   name        => 'widget_id',
+                        in          => 'path',
+                        description => 'widget_id identifier',
+                        required    => JSON::true,
+                        type        => 'integer'
+                    },
                 ],
-                responses      => { '200' => { description => 'A widget', schema => { type => 'object' } } },
-                'x-koha-authorization' => { permissions => { catalogue => '1' } },
+                responses              => { '200'       => { description => 'A widget', schema => { type => 'object' } } },
+                'x-koha-authorization' => { permissions => { catalogue   => '1' } },
             },
         },
     };
@@ -240,15 +241,15 @@ subtest 'api route composition' => sub {
 
     # Verify the spec
     my $loaded_spec = JSON::decode_json( Path::Tiny::path("$plugin_dir/openapi.json")->slurp_utf8 );
-    ok( exists $loaded_spec->{'/widgets'},               'list route exists in spec' );
-    ok( exists $loaded_spec->{'/widgets/{widget_id}'},   'get route exists in spec' );
+    ok( exists $loaded_spec->{'/widgets'},             'list route exists in spec' );
+    ok( exists $loaded_spec->{'/widgets/{widget_id}'}, 'get route exists in spec' );
     is( $loaded_spec->{'/widgets'}{get}{operationId}, 'listWidgets', 'operationId correct' );
 
     # Verify path parameters were structured correctly
     my $params = $loaded_spec->{'/widgets/{widget_id}'}{get}{parameters};
-    is( scalar @{$params}, 1,             'one path parameter' );
-    is( $params->[0]{name}, 'widget_id',  'parameter name correct' );
-    is( $params->[0]{in},   'path',       'parameter location correct' );
+    is( scalar @{$params},  1,           'one path parameter' );
+    is( $params->[0]{name}, 'widget_id', 'parameter name correct' );
+    is( $params->[0]{in},   'path',      'parameter location correct' );
 
     chdir $orig or die;
 };
@@ -272,19 +273,16 @@ subtest 'migration file sequencing' => sub {
 
     # Create first migration manually
     require Path::Tiny;
-    Path::Tiny::path("$migrations_dir/001_create_widgets.sql")->spew_utf8(
-        "CREATE TABLE widgets (id INT PRIMARY KEY);\n"
-    );
+    Path::Tiny::path("$migrations_dir/001_create_widgets.sql")->spew_utf8("CREATE TABLE widgets (id INT PRIMARY KEY);\n");
 
     # Create second migration
-    Path::Tiny::path("$migrations_dir/002_add_widget_name.sql")->spew_utf8(
-        "ALTER TABLE widgets ADD COLUMN name VARCHAR(255);\n"
-    );
+    Path::Tiny::path("$migrations_dir/002_add_widget_name.sql")
+        ->spew_utf8("ALTER TABLE widgets ADD COLUMN name VARCHAR(255);\n");
 
     # Verify ordering
     my @files = sort glob "$migrations_dir/*.sql";
     is( scalar @files, 2, 'two migration files exist' );
-    like( $files[0], qr/001_create_widgets/, 'first migration named correctly' );
+    like( $files[0], qr/001_create_widgets/,  'first migration named correctly' );
     like( $files[1], qr/002_add_widget_name/, 'second migration named correctly' );
 
     # Verify content
@@ -299,7 +297,7 @@ subtest 'migration file sequencing' => sub {
 # ============================================================
 
 subtest 'config migration from legacy .env' => sub {
-    my $orig = Cwd::getcwd();
+    my $orig          = Cwd::getcwd();
     my $migration_dir = tempdir( CLEANUP => 1 );
     chdir $migration_dir or die "Cannot chdir: $!";
 
@@ -325,9 +323,9 @@ DOTENV
     my $result = _quiet { Local::Config::migrate_from_dotenv('yml') };
     is( $result, 'koha-plugin.yml', 'migration returns target filename' );
 
-    ok( -e 'koha-plugin.yml',  'config file created' );
-    ok( -e '.env.bak',         '.env renamed to .env.bak' );
-    ok( !-e '.env',            '.env removed' );
+    ok( -e 'koha-plugin.yml', 'config file created' );
+    ok( -e '.env.bak',        '.env renamed to .env.bak' );
+    ok( !-e '.env',           '.env removed' );
 
     # Verify content
     my $config = Local::Config::load_config('koha-plugin.yml');
@@ -336,8 +334,8 @@ DOTENV
     is( $config->{author},  'MigrateAuthor',                           'author migrated' );
 
     # Verify legacy key normalization
-    is( $config->{minimum_version}, '22.11',  'min_koha_version normalized to minimum_version' );
-    ok( !exists $config->{min_koha_version},  'old key removed' );
+    is( $config->{minimum_version}, '22.11', 'min_koha_version normalized to minimum_version' );
+    ok( !exists $config->{min_koha_version}, 'old key removed' );
 
     # Verify .env.bak content is preserved
     my $backup = Path::Tiny::path('.env.bak')->slurp_utf8;
@@ -351,7 +349,7 @@ DOTENV
 # ============================================================
 
 subtest 'full increment cycle with semver resets' => sub {
-    my $orig = Cwd::getcwd();
+    my $orig    = Cwd::getcwd();
     my $inc_dir = tempdir( CLEANUP => 1 );
     chdir $inc_dir or die "Cannot chdir: $!";
 
@@ -388,7 +386,7 @@ MODULE
 
     # Verify module file reflects final version
     my $final_content = Path::Tiny::path($mod_path)->slurp_utf8;
-    like( $final_content, qr/v2\.0\.0/, 'module file has final version' );
+    like( $final_content, qr/v2\.0\.0/,                   'module file has final version' );
     like( $final_content, qr/'version'\s*=>\s*'2\.0\.0'/, 'metadata hash has final version' );
 
     chdir $orig or die;

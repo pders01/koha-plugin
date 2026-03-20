@@ -145,7 +145,7 @@ sub run_init {
                 org      => $components->@[ $CONST->{'INDEX_ORG'} ],
                 project  => $components->@[ $CONST->{'INDEX_PROJECT'} ],
                 version  => $metadata->{version} // '0.0.1',
-                metadata => stringify_metadata($metadata),
+                metadata => stringify_metadata( { $metadata->%*, name => $components->@[ $CONST->{'INDEX_PROJECT'} ], } ),
                 ( $hooks->@* ? map { $_ => 1 } $hooks->@* : () )
             },
             _base_module_path( $path, $components->@[ $CONST->{'INDEX_PROJECT'} ] ),
