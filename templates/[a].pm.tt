@@ -25,231 +25,231 @@ sub new {
 [%# Basics %]
 
 [% IF install %]
-    [% INCLUDE hooks/install.pl %]
+[%- INCLUDE hooks/install.pl %]
 [% END %]
 
 [% IF upgrade %]
-    [% INCLUDE hooks/upgrade.pl %]
+[%- INCLUDE hooks/upgrade.pl %]
 [% END %]
 
 [% IF uninstall %]
-    [% INCLUDE hooks/uninstall.pl %]
+[%- INCLUDE hooks/uninstall.pl %]
 [% END %]
 
 
 [%# Actions %]
 
 [% IF admin %]
-    [% INCLUDE hooks/admin.pl %]
+[%- INCLUDE hooks/admin.pl %]
 [% END %]
 
 [% IF configure %]
-    [% INCLUDE hooks/configure.pl %]
+[%- INCLUDE hooks/configure.pl %]
 [% END %]
 
 [% IF report %]
-    [% INCLUDE hooks/report.pl %]
+[%- INCLUDE hooks/report.pl %]
 [% END %]
 
 [% IF tool %]
-    [% INCLUDE hooks/tool.pl %]
+[%- INCLUDE hooks/tool.pl %]
 [% END %]
 
 [%# API %]
 
 [% IF api %]
-    [% INCLUDE hooks/api_namespace.pl %]
-    
-    [% INCLUDE hooks/api_routes.pl %]
+[%- INCLUDE hooks/api_namespace.pl -%]
+
+[%- INCLUDE hooks/api_routes.pl %]
 [% END %]
 
 [% IF static %]
-    [% INCLUDE hooks/static_routes.pl %]
+[%- INCLUDE hooks/static_routes.pl %]
 [% END %]
 
 
 [%# Intranet %]
 
 [% IF intranet_catalog_biblio_enhancements_toolbar_button %]
-    [% INCLUDE hooks/intranet_catalog_biblio_enhancements_toolbar_button.pl %]
+[%- INCLUDE hooks/intranet_catalog_biblio_enhancements_toolbar_button.pl %]
 [% END %]
 
 [% IF intranet_catalog_biblio_tab %]
-    [% INCLUDE hooks/intranet_catalog_biblio_tab.pl %]
+[%- INCLUDE hooks/intranet_catalog_biblio_tab.pl %]
 [% END %]
 
 [% IF intranet_head %]
-    [% INCLUDE hooks/intranet_head.pl %]
+[%- INCLUDE hooks/intranet_head.pl %]
 [% END %]
 
 [% IF intranet_js %]
-    [% INCLUDE hooks/intranet_js.pl %]
+[%- INCLUDE hooks/intranet_js.pl %]
 [% END %]
 
 
 [%# OPAC %]
 
 [% IF opac_detail_xslt_variables %]
-    [% INCLUDE hooks/opac_detail_xslt_variables.pl %]
+[%- INCLUDE hooks/opac_detail_xslt_variables.pl %]
 [% END %]
 
 [% IF opac_head %]
-    [% INCLUDE hooks/opac_head.pl %]
+[%- INCLUDE hooks/opac_head.pl %]
 [% END %]
 
 [% IF opac_js %]
-    [% INCLUDE hooks/opac_js.pl %]
+[%- INCLUDE hooks/opac_js.pl %]
 [% END %]
 
 [% IF opac_online_payment %]
-    [% INCLUDE hooks/opac_online_payment.pl %]
+[%- INCLUDE hooks/opac_online_payment.pl %]
 
-    [% INCLUDE hooks/opac_online_payment_begin.pl %]
+[%- INCLUDE hooks/opac_online_payment_begin.pl %]
 
-    [% INCLUDE hooks/opac_online_payment_end.pl %]
+[%- INCLUDE hooks/opac_online_payment_end.pl %]
 
-    [% INCLUDE hooks/opac_online_payment_threshold.pl %]
+[%- INCLUDE hooks/opac_online_payment_threshold.pl %]
 [% END %]
 
 [% IF opac_results_xslt_variables %]
-    [% INCLUDE hooks/opac_results_xslt_variables.pl %]
+[%- INCLUDE hooks/opac_results_xslt_variables.pl %]
 [% END %]
 
 
 [%# Patrons %]
 
 [% IF patron_barcode_transform %]
-    [% INCLUDE hooks/patron_barcode_transform.pl %]
+[%- INCLUDE hooks/patron_barcode_transform.pl %]
 [% END %]
 
 [% IF patron_generate_userid %]
-    [% INCLUDE hooks/patron_generate_userid.pl %]
+[%- INCLUDE hooks/patron_generate_userid.pl %]
 [% END %]
 
 [% IF check_password %]
-    [% INCLUDE hooks/check_password.pl %]
+[%- INCLUDE hooks/check_password.pl %]
 [% END %]
 
 
 [%# Items %]
 
 [% IF item_barcode_transform %]
-    [% INCLUDE hooks/item_barcode_transform.pl %]
+[%- INCLUDE hooks/item_barcode_transform.pl %]
 [% END %]
 
 
 [%# Misc %]
 
 [% IF background_tasks %]
-    [% INCLUDE hooks/background_tasks.pl %]
+[%- INCLUDE hooks/background_tasks.pl %]
 [% END %]
 
 [% IF before_send_messages %]
-    [% INCLUDE hooks/before_send_messages.pl %]
+[%- INCLUDE hooks/before_send_messages.pl %]
 [% END %]
 
 [% IF cronjob_nightly %]
-    [% INCLUDE hooks/cronjob_nightly.pl %]
+[%- INCLUDE hooks/cronjob_nightly.pl %]
 [% END %]
 
 [% IF to_marc %]
-    [% INCLUDE hooks/to_marc.pl %]
+[%- INCLUDE hooks/to_marc.pl %]
 [% END %]
 
 [% IF transform_prepared_letter %]
-    [% INCLUDE hooks/transform_prepared_letter.pl %]
+[%- INCLUDE hooks/transform_prepared_letter.pl %]
 [% END %]
 
 [% IF after_biblio_action %]
-    [% INCLUDE hooks/after_biblio_action.pl %]
+[%- INCLUDE hooks/after_biblio_action.pl %]
 [% END %]
 
 [% IF before_biblio_action %]
-    [% INCLUDE hooks/before_biblio_action.pl %]
+[%- INCLUDE hooks/before_biblio_action.pl %]
 [% END %]
 
 [% IF after_item_action %]
-    [% INCLUDE hooks/after_item_action.pl %]
+[%- INCLUDE hooks/after_item_action.pl %]
 [% END %]
 
 [% IF after_hold_create %]
-    [% INCLUDE hooks/after_hold_create.pl %]
+[%- INCLUDE hooks/after_hold_create.pl %]
 [% END %]
 
 [% IF after_circ_action %]
-    [% INCLUDE hooks/after_circ_action.pl %]
+[%- INCLUDE hooks/after_circ_action.pl %]
 [% END %]
 
 [% IF after_authority_action %]
-    [% INCLUDE hooks/after_authority_action.pl %]
+[%- INCLUDE hooks/after_authority_action.pl %]
 [% END %]
 
 [% IF after_hold_action %]
-    [% INCLUDE hooks/after_hold_action.pl %]
+[%- INCLUDE hooks/after_hold_action.pl %]
 [% END %]
 
 [% IF after_recall_action %]
-    [% INCLUDE hooks/after_recall_action.pl %]
+[%- INCLUDE hooks/after_recall_action.pl %]
 [% END %]
 
 [% IF after_account_action %]
-    [% INCLUDE hooks/after_account_action.pl %]
+[%- INCLUDE hooks/after_account_action.pl %]
 [% END %]
 
 [% IF intranet_cover_images %]
-    [% INCLUDE hooks/intranet_cover_images.pl %]
+[%- INCLUDE hooks/intranet_cover_images.pl %]
 [% END %]
 
 [% IF opac_cover_images %]
-    [% INCLUDE hooks/opac_cover_images.pl %]
+[%- INCLUDE hooks/opac_cover_images.pl %]
 [% END %]
 
 [% IF patron_consent_type %]
-    [% INCLUDE hooks/patron_consent_type.pl %]
+[%- INCLUDE hooks/patron_consent_type.pl %]
 [% END %]
 
 [% IF template_include_paths %]
-    [% INCLUDE hooks/template_include_paths.pl %]
+[%- INCLUDE hooks/template_include_paths.pl %]
 [% END %]
 
 [% IF auth_client_get_user %]
-    [% INCLUDE hooks/auth_client_get_user.pl %]
+[%- INCLUDE hooks/auth_client_get_user.pl %]
 [% END %]
 
 [% IF framework_defaults_override %]
-    [% INCLUDE hooks/framework_defaults_override.pl %]
+[%- INCLUDE hooks/framework_defaults_override.pl %]
 [% END %]
 
 [% IF before_orderline_create %]
-    [% INCLUDE hooks/before_orderline_create.pl %]
+[%- INCLUDE hooks/before_orderline_create.pl %]
 [% END %]
 
 [% IF overwrite_calc_fine %]
-    [% INCLUDE hooks/overwrite_calc_fine.pl %]
+[%- INCLUDE hooks/overwrite_calc_fine.pl %]
 [% END %]
 
 [% IF elasticsearch_to_document %]
-    [% INCLUDE hooks/elasticsearch_to_document.pl %]
+[%- INCLUDE hooks/elasticsearch_to_document.pl %]
 [% END %]
 
 [% IF notices_content %]
-    [% INCLUDE hooks/notices_content.pl %]
+[%- INCLUDE hooks/notices_content.pl %]
 [% END %]
 
 [% IF ill_availability_services %]
-    [% INCLUDE hooks/ill_availability_services.pl %]
+[%- INCLUDE hooks/ill_availability_services.pl %]
 [% END %]
 
 [% IF ill_backend %]
-    [% INCLUDE hooks/ill_backend.pl %]
+[%- INCLUDE hooks/ill_backend.pl %]
 [% END %]
 
 [% IF new_ill_backend %]
-    [% INCLUDE hooks/new_ill_backend.pl %]
+[%- INCLUDE hooks/new_ill_backend.pl %]
 [% END %]
 
 [% IF edifact %]
-    [% INCLUDE hooks/edifact.pl %]
+[%- INCLUDE hooks/edifact.pl %]
 [% END %]
 
 1;
