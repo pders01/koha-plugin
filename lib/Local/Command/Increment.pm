@@ -1,0 +1,182 @@
+package Local::Command::Increment;
+
+use strict;
+use warnings;
+
+use DateTime   ();
+use JSON       qw( decode_json encode_json );
+use List::Util qw( none );
+use Path::Tiny qw( path );
+use Readonly   qw( Readonly );
+
+use Local::Util qw( l );
+
+use Exporter 'import';
+
+our @EXPORT_OK = qw( run_increment );
+
+Readonly my $CONST => {
+    INDENTATION              => 4,
+    INDEX_MAJOR              => 0,
+    INDEX_MINOR              => 1,
+    INDEX_PATCH              => 2,
+    LENGTH_SEMVER_COMPONENTS => 3,
+    OFFSET_DATE_UPDATED      => 5,
+    OFFSET_VERSION           => 10,
+};
+
+sub run_increment {
+    my (%opts) = @_;
+
+    my $version = $opts{version};
+    my $name    = $opts{name};
+    my $type    = $opts{type}  // 'patch';
+    my $times   = $opts{times} // 1;
+
+    if ( !$version ) {
+        l( 'error', 'version is required for increment' );
+        return;
+    }
+
+    if ( !$name ) {
+        l( 'error', 'name is required for increment' );
+        return;
+    }
+
+    my $components = [ split /[.]/smx, $version ];
+    if ( scalar @{$components} != $CONST->{'LENGTH_SEMVER_COMPONENTS'} ) {
+        l( 'error', "invalid semver format: $version (expected X.Y.Z)" );
+        return;
+    }
+
+    $components = _incremented_components( $components, $type, $times );
+    return if !$components;
+
+    my $new_version = _join_components($components);
+    if ( !_update_dotenv($new_version) ) {
+        l( 'error', 'Updating PLUGIN_VERSION in .env failed' ) and return;
+    }
+
+    if ( !_update_package_json($new_version) ) {
+        l( 'error', 'Updating version in package.json failed' ) and return;
+    }
+
+    if ( !_update_base_module( $new_version, $name ) ) {
+        l( 'error', 'Updating version in package declaration or metadata in base module failed' ) and return;
+    }
+
+    return 1;
+}
+
+sub _incremented_components {
+    my ( $components, $type, $times ) = @_;
+
+    my $clone = [ $components->@* ];
+    if ( none { $type eq $_ } qw(major minor patch) ) {
+        l( 'error', "unrecognized type: $type" );
+        return;
+    }
+
+    my $index = $CONST->{ join q{_}, 'INDEX', uc $type };
+    while ( $times-- ) {
+        $clone->[$index]++;
+    }
+
+    l( 'info', join q{ }, "incrementing $type version from", _join_components($components), 'to', _join_components($clone) );
+
+    return $clone;
+}
+
+sub _update_dotenv {
+    my ($new_version) = @_;
+
+    my $dotenv = path('.env');
+    if ( !$dotenv->exists ) {
+        l( 'error', '.env not found, aborting...' ) and return 0;
+    }
+
+    my $lines           = [ $dotenv->lines_utf8( { chomp => 1 } ) ];
+    my $version_updated = 0;
+    for my $line ( $lines->@* ) {
+        if ( $line =~ /^PLUGIN_VERSION=/smx ) {
+            $line            = "PLUGIN_VERSION=$new_version";
+            $version_updated = 1;
+        }
+
+        if ( $version_updated and $line =~ /^PLUGIN_DATE_UPDATED=/smx ) {
+            $line = join q{}, 'PLUGIN_DATE_UPDATED=', DateTime->now->ymd(q{-});
+        }
+    }
+
+    return $dotenv->spew_utf8( join "\n", $lines->@*, "\n" );
+}
+
+sub _update_package_json {
+    my ($new_version) = @_;
+
+    my $package_json = path('package.json');
+    if ( !$package_json->exists ) {
+        l( 'info', 'package.json not found, skipping...' ) and return 1;
+    }
+
+    my $contents = $package_json->slurp_utf8;
+    my $data     = decode_json($contents);
+
+    $data->{version} = $new_version;
+    $contents = encode_json($data);
+
+    return $package_json->spew_utf8($contents);
+}
+
+sub _update_base_module {
+    my ( $new_version, $name ) = @_;
+
+    my $base_module = path( join( q{/}, split /::/smx, $name ) . '.pm' );
+    if ( !$base_module->exists ) {
+        l( 'error', 'Base module not found' ) and return 0;
+    }
+
+    my $lines       = [ $base_module->lines_utf8( { chomp => 1 } ) ];
+    my $in_metadata = 0;
+    for my $line ( $lines->@* ) {
+
+        # Update the version in the package declaration
+        if ( $line =~ /^package\s+([[:alnum:]:]+)\s+v([\d]+[.][\d]+[.][\d]+);/smx ) {
+            my $package_name = $1;
+            $line = "package $package_name v$new_version;";
+        }
+
+        # Detect if we are inside the $metadata block
+        if ( $line =~ /\$metadata\s*=\s*{/smx ) {
+            $in_metadata = 1;
+        }
+
+        # Only handle lines inside $metadata block
+        if ($in_metadata) {
+            if ( $line =~ /\s*'?version'?\s*=>\s*'[\d]+[.][\d]+[.][\d]+',?/smx ) {
+                $line = join q{}, q{ } x $CONST->{'INDENTATION'}, q{'version'}, q{ } x $CONST->{'OFFSET_VERSION'},
+                    qq{=> '$new_version',};
+            }
+
+            if ( $line =~ /\s*'?date_updated'?\s*=>\s*'[\d]+-[\d]+-[\d]+',?/smx ) {
+                my $date = DateTime->now->ymd(q{-});
+                $line = join q{}, q{ } x $CONST->{'INDENTATION'}, q{'date_updated'}, q{ } x $CONST->{'OFFSET_DATE_UPDATED'},
+                    qq{=> '$date',};
+            }
+
+            if ( $line =~ /\s*};\s*/smx ) {
+                $in_metadata = 0;
+            }
+        }
+
+    }
+
+    return $base_module->spew_utf8( join "\n", $lines->@* );
+}
+
+sub _join_components {
+    my ($components) = @_;
+    return join q{.}, $components->@*;
+}
+
+1;

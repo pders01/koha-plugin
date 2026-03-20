@@ -2,215 +2,197 @@
 use strict;
 use warnings;
 use feature 'say';
-use Getopt::Long qw( GetOptions );
-use Pod::Usage qw( pod2usage );
-use File::Path qw( remove_tree );
 use File::Basename qw( dirname );
-use lib dirname(dirname(__FILE__)) . '/lib';
+use File::Path     qw( remove_tree );
 
-my $VERSION = 'v1.0.0';
-
-# Load environment variables from .env file
-load_env_file();
-
-sub load_env_file {
-    my $env_file = '.env';
-    if (-e $env_file) {
-        open my $fh, '<', $env_file or die "Cannot open $env_file: $!";
-        while (my $line = <$fh>) {
-            chomp $line;
-            next if $line =~ /^\s*#/;  # Skip comments
-            next if $line =~ /^\s*$/;  # Skip empty lines
-            if ($line =~ /^\s*(\w+)=(.*)$/) {
-                $ENV{$1} = $2;
-            }
-        }
-        close $fh;
+# In dev mode, add local lib paths; in PAR mode, modules are bundled
+BEGIN {
+    unless ( $ENV{PAR_TEMP} ) {
+        my $root = dirname( dirname(__FILE__) );
+        require lib;
+        lib->import("$root/lib");
+        lib->import("$root/local/lib/perl5");
     }
 }
 
-sub version {
+use Local::Command::Init      qw( run_init );
+use Local::Command::Add       qw( run_add );
+use Local::Command::Increment qw( run_increment );
+use Local::Util               qw( asset_dir );
+
+my $VERSION = 'v1.0.0';
+
+# Load .env: CWD first, then PAR-bundled fallback
+_load_env_file();
+
+my $command = shift @ARGV // '';
+
+my %COMMANDS = (
+    'version'     => \&_cmd_version,
+    'help'        => \&_cmd_help,
+    'clean'       => \&_cmd_clean,
+    'init'        => \&_cmd_init,
+    'add'         => \&_cmd_add,
+    'increment'   => \&_cmd_increment,
+    'package'     => \&_cmd_package,
+    'staticapi'   => \&_cmd_staticapi,
+    'ktd'         => \&_cmd_ktd,
+    'update-meta' => \&_cmd_update_meta,
+);
+
+if ( $command eq '' || $command eq '--help' || $command eq '-h' ) {
+    _cmd_help();
+}
+elsif ( $command eq '--version' || $command eq '-v' ) {
+    _cmd_version();
+}
+elsif ( my $handler = $COMMANDS{$command} ) {
+    $handler->(@ARGV);
+}
+else {
+    say "Unknown command: $command";
+    _cmd_help();
+    exit 1;
+}
+
+# --- Commands ---
+
+sub _cmd_version {
     say "koha-plugin $VERSION";
     exit;
 }
 
-sub help {
-    pod2usage(-verbose => 2);
+sub _cmd_help {
+    print <<"USAGE";
+koha-plugin $VERSION - Koha Plugin Builder
+
+Usage: koha-plugin <command> [arguments]
+
+Commands:
+    init                        Initialize a new Koha plugin
+    add <component>             Add a component (action, node)
+    increment [options]         Increment version (patch, minor, major)
+    package                     Create a .kpz file
+    clean                       Remove Koha/ directory and package.json
+    staticapi                   Update staticapi.json
+    ktd [container] [binary]    Deploy to KTD container
+    update-meta                 Update the koha-plugin repository
+
+Options:
+    --version, -v               Show version
+    --help, -h                  Show this help
+
+Increment options:
+    --type TYPE                 Version part to increment (patch, minor, major; default: patch)
+    --times N                   Number of increments (default: 1)
+USAGE
     exit;
 }
 
-sub clean {
-    say "Cleaning...";
-    if (-d 'Koha') {
+sub _cmd_clean {
+    say 'Cleaning...';
+    if ( -d 'Koha' ) {
         remove_tree('Koha');
     }
-    if (-e 'package.json') {
-        unlink('package.json');
+    if ( -e 'package.json' ) {
+        unlink 'package.json';
     }
-    say "Clean completed successfully";
+    say 'Clean completed successfully';
 }
 
-sub init {
-    say "Initializing new Koha plugin...";
-    system('carton exec ./scripts/init.pl') == 0 
-        or die "Init failed: $!";
-    say "Initialization completed successfully";
+sub _cmd_init {
+    say 'Initializing new Koha plugin...';
+    run_init();
+    say 'Initialization completed successfully';
 }
 
-sub add {
+sub _cmd_add {
     my ($component) = @_;
-    unless ($component) {
-        die "Component name is required for add command";
+    if ( !$component ) {
+        say 'Usage: koha-plugin add <component>';
+        say 'Components: action, node';
+        exit 1;
     }
     say "Adding component: $component";
-    system("carton exec ./scripts/add.pl $component") == 0 
-        or die "Add component failed: $!";
+    run_add($component);
     say "Component $component added successfully";
 }
 
-sub increment {
-    my ($type, $times) = @_;
-    $type //= 'patch';
-    $times //= '1';
-    
+sub _cmd_increment {
+    # Parse increment-specific options from remaining @ARGV
+    require Getopt::Long;
+    my $type  = 'patch';
+    my $times = 1;
+    Getopt::Long::GetOptionsFromArray(
+        \@_,
+        'type=s'  => \$type,
+        'times=i' => \$times,
+    );
+
     say "Incrementing version ($type) by $times...";
-    system("./scripts/increment.pl --version \"$ENV{PLUGIN_VERSION}\" --name \"$ENV{PLUGIN_NAME}\" --type $type --times $times") == 0 
-        or die "Increment failed: $!";
-    say "Version incremented successfully";
+    run_increment(
+        version => $ENV{PLUGIN_VERSION},
+        name    => $ENV{PLUGIN_NAME},
+        type    => $type,
+        times   => $times,
+    );
+    say 'Version incremented successfully';
 }
 
-sub create_package {
-    say "Packaging plugin...";
-    system("./scripts/package.sh \"$ENV{PLUGIN_NAME}\" \"$ENV{PLUGIN_RELEASE_FILENAME}\" \"$ENV{PLUGIN_VERSION}\"") == 0 
-        or die "Package failed: $!";
-    say "Plugin packaged successfully";
+sub _cmd_package {
+    say 'Packaging plugin...';
+    _run_script( 'package.sh', $ENV{PLUGIN_NAME}, $ENV{PLUGIN_RELEASE_FILENAME}, $ENV{PLUGIN_VERSION} );
+    say 'Plugin packaged successfully';
 }
 
-sub staticapi {
-    say "Updating static API...";
-    system("./scripts/staticapi.sh \"$ENV{PLUGIN_NAME}\" \"$ENV{PLUGIN_STATIC_DIR_NAME}\"") == 0 
-        or die "Static API update failed: $!";
-    say "Static API updated successfully";
+sub _cmd_staticapi {
+    say 'Updating static API...';
+    _run_script( 'staticapi.sh', $ENV{PLUGIN_NAME}, $ENV{PLUGIN_STATIC_DIR_NAME} );
+    say 'Static API updated successfully';
 }
 
-sub ktd {
-    my ($container, $binary) = @_;
-    $container //= "kohadev-koha-1";
-    $binary //= "docker";
-    
+sub _cmd_ktd {
+    my ( $container, $binary ) = @_;
+    $container //= 'kohadev-koha-1';
+    $binary    //= 'docker';
     say "Running ktd with container=$container, binary=$binary";
-    system("./scripts/ktd.sh $container $binary") == 0 
-        or die "KTD failed: $!";
-    say "KTD completed successfully";
+    _run_script( 'ktd.sh', $container, $binary );
+    say 'KTD completed successfully';
 }
 
-sub update_meta {
-    say "Updating metadata...";
-    system("./scripts/update-meta.sh") == 0 
-        or die "Update metadata failed: $!";
-    say "Metadata updated successfully";
+sub _cmd_update_meta {
+    say 'Updating metadata...';
+    _run_script('update-meta.sh');
+    say 'Metadata updated successfully';
 }
 
-# Command line argument parsing
-my $cmd_clean = 0;
-my $cmd_init = 0;
-my $cmd_add = '';
-my $cmd_increment_type = 'patch';
-my $cmd_increment_times = '1';
-my $cmd_package = 0;
-my $cmd_staticapi = 0;
-my $cmd_ktd_container = 'kohadev-koha-1';
-my $cmd_ktd_binary = 'docker';
-my $cmd_update_meta = 0;
+# --- Helpers ---
 
-GetOptions(
-    'version' => \&version,
-    'help|?' => \&help,
-    'clean' => \$cmd_clean,
-    'init' => \$cmd_init,
-    'add=s' => \$cmd_add,
-    'increment:s' => \$cmd_increment_type,
-    'times=i' => \$cmd_increment_times,
-    'package' => \$cmd_package,
-    'staticapi' => \$cmd_staticapi,
-    'ktd:s' => \$cmd_ktd_container,
-    'binary=s' => \$cmd_ktd_binary,
-    'update-meta' => \$cmd_update_meta,
-) or pod2usage(2);
+sub _load_env_file {
+    # Prefer CWD .env, fall back to PAR-bundled .env
+    my $env_file = -e '.env' ? '.env' : asset_dir('.env');
+    return unless -e $env_file;
 
-# Process command line arguments or positional command
-my $command = $ARGV[0] // '';
-
-if ($cmd_clean || $command eq 'clean') {
-    clean();
-}
-elsif ($cmd_init || $command eq 'init') {
-    init();
-}
-elsif ($cmd_add || $command eq 'add') {
-    my $component = $cmd_add || $ARGV[1] || '';
-    add($component);
-}
-elsif ($command eq 'increment') {
-    my $type = $ARGV[1] || $cmd_increment_type;
-    my $times = $ARGV[2] || $cmd_increment_times;
-    increment($type, $times);
-}
-elsif ($cmd_package || $command eq 'package') {
-    create_package();
-}
-elsif ($cmd_staticapi || $command eq 'staticapi') {
-    staticapi();
-}
-elsif ($command eq 'ktd') {
-    my $container = $ARGV[1] || $cmd_ktd_container;
-    my $binary = $ARGV[2] || $cmd_ktd_binary;
-    ktd($container, $binary);
-}
-elsif ($cmd_update_meta || $command eq 'update-meta') {
-    update_meta();
-}
-elsif ($command eq '') {
-    # Default command: list available commands
-    help();
-}
-else {
-    say "Unknown command: $command";
-    help();
+    open my $fh, '<', $env_file or die "Cannot open $env_file: $!";
+    while ( my $line = <$fh> ) {
+        chomp $line;
+        next if $line =~ /^\s*#/;
+        next if $line =~ /^\s*$/;
+        if ( $line =~ /^\s*(\w+)=(.*)$/ ) {
+            $ENV{$1} = $2;
+        }
+    }
+    close $fh;
+    return;
 }
 
-__END__
-
-=head1 NAME
-
-koha-plugin.pl - Koha Plugin Builder
-
-=head1 SYNOPSIS
-
-koha-plugin.pl [command] [options]
-
-Commands:
-    clean           Remove Koha/ directory and package.json
-    init            Initialize a new Koha plugin
-    add COMPONENT   Add a component to your plugin
-    increment TYPE TIMES  Increment version (patch, minor, major)
-    package         Create a kpz file
-    staticapi       Update staticapi.json
-    ktd CONTAINER BINARY  Run ktd script
-    update-meta     Update the koha-plugin repository
-
-Options:
-    --version       Show version
-    --help          Show this help
-    --clean         Run clean command
-    --init          Run init command
-    --add=COMPONENT Add specified component
-    --increment=TYPE Increment version (default: patch)
-    --times=N       Number of increments (default: 1)
-    --package       Run package command
-    --staticapi     Run staticapi command
-    --ktd=CONTAINER Run ktd with container (default: kohadev-koha-1)
-    --binary=BINARY Binary for ktd (default: docker)
-    --update-meta   Run update-meta command
-
-=cut
+sub _run_script {
+    my ( $name, @args ) = @_;
+    my $script = asset_dir("scripts/$name");
+    if ( !-e $script ) {
+        die "Script not found: $script\n";
+    }
+    my @cmd = ( $script, @args );
+    system(@cmd) == 0 or die "Command failed: @cmd\n";
+    return;
+}

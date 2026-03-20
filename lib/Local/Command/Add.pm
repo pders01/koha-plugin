@@ -1,0 +1,136 @@
+package Local::Command::Add;
+
+use strict;
+use warnings;
+
+use Carp         qw( croak );
+use IPC::Open3   qw( open3 );
+use JSON         qw( decode_json );
+use Path::Tiny   qw( cwd path );
+use Readonly     qw( Readonly );
+use Symbol       qw( gensym );
+use Template     ();
+use Term::Choose qw( choose );
+
+use Local::Metadata qw( metadata_from_env );
+use Local::Util     qw( l asset_dir );
+
+use Exporter 'import';
+
+our @EXPORT_OK = qw( run_add );
+
+Readonly my $CONST => { INDEX_PROJECT => 4 };
+
+my %COMPONENTS = (
+    action => \&_add_action,
+    node   => \&_add_node,
+);
+
+sub run_add {
+    my ($component) = @_;
+
+    if ( !$component ) {
+        l( 'error', 'component name is required (action, node)' );
+        return;
+    }
+
+    my $handler = $COMPONENTS{$component};
+    if ( !$handler ) {
+        l( 'error', "unknown component: $component (available: action, node)" );
+        return;
+    }
+
+    return $handler->();
+}
+
+sub _add_action {
+    my $tt = Template->new(
+        {   INCLUDE_PATH => asset_dir('templates'),
+            START_TAG    => '<%',
+            END_TAG      => '%>',
+            FILTERS      => {
+                capitalize => sub {
+                    my $text = shift;
+                    $text =~ s/^(\w)/\U$1/smx;
+                    return $text;
+                }
+            }
+        }
+    );
+    if ($Template::ERROR) {
+        l( 'error', $Template::ERROR ) and return;
+    }
+
+    my $metadata = metadata_from_env();
+    my $action   = choose( [qw(admin configure report tool)] );
+
+    my $cwd        = cwd;
+    my $components = [ split /::/smx, $metadata->{name} ];
+    my $name       = join q{/}, $components->@*;
+    my $path       = path("$cwd/$name");
+
+    $tt->process(
+        'sites/action.tt',
+        {   a      => $components->@[-1],
+            action => $action,
+        },
+        "$path/$action.tt"
+    );
+    if ( $tt->error ) {
+        l( 'error', $tt->error ) and return;
+    }
+
+    return 1;
+}
+
+sub _add_node {
+    my $metadata = metadata_from_env();
+
+    my $j     = JSON->new;
+    my $error = gensym;
+    my $pid   = open3( undef, undef, $error, 'npm', 'init', '-y' );
+
+    waitpid $pid, 0;
+
+    while (<$error>) {
+        print or croak;
+    }
+
+    my $path = path('package.json');
+    if ( !$path->exists ) {
+        l( 'error', 'package.json was not created by `npm init`' );
+        return;
+    }
+
+    my $json = $j->utf8->decode( $path->slurp_utf8 );
+    if ( $metadata->{name} ) {
+        $json->{'name'} = lc join q{-}, [ split /::/smx, $metadata->{name} ]->@[ 0 .. 1, $CONST->{'INDEX_PROJECT'} ];
+    }
+
+    if ( $metadata->{version} ) {
+        $json->{'version'} = $metadata->{version};
+    }
+
+    if ( $metadata->{description} ) {
+        $json->{'description'} = $metadata->{description};
+    }
+
+    if ( $metadata->{author} ) {
+        $json->{'author'} = $metadata->{author};
+    }
+
+    my $src = path('src');
+    if ( !$src->mkdir ) {
+        l( 'warning', "src directory could not be created: $src" );
+    }
+
+    if ( $src->is_dir ) {
+        $json->{'main'} = 'src/index';
+    }
+
+    $path->spew_utf8( $j->utf8->pretty->encode($json) );
+
+    return 1;
+}
+
+1;

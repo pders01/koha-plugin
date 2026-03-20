@@ -4,11 +4,12 @@ use strict;
 use warnings;
 
 use Carp            qw( croak );
+use File::Spec      ();
 use Term::ANSIColor qw( colored );
 
 use Exporter 'import';
 
-our @EXPORT_OK = qw( l );
+our @EXPORT_OK = qw( l asset_dir );
 
 ## no critic qw(ValuesAndExpressions::RequireInterpolationOfMetachars)
 
@@ -23,6 +24,18 @@ sub l {
         or croak;
 
     return 1;
+}
+
+sub asset_dir {
+    my ($subdir) = @_;
+
+    my $base = $ENV{PAR_TEMP}
+        ? File::Spec->catdir( $ENV{PAR_TEMP}, 'inc' )
+        : q{.};
+
+    return defined $subdir
+        ? File::Spec->catdir( $base, $subdir )
+        : $base;
 }
 
 1;
