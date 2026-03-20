@@ -3,8 +3,7 @@ package Local::Metadata;
 use strict;
 use warnings;
 
-use DateTime     ();
-use Data::Dumper ();
+use DateTime ();
 
 use Local::Util qw( l );
 
@@ -74,9 +73,18 @@ sub validate_metadata {
         return;
     }
 
-    if ( @{ [ split /::/smx, $m->{name} ] } != 5 ) {
+    my @name_parts = split /::/smx, $m->{name};
+    if ( @name_parts != 5 ) {
         l( 'error', 'name validation failed, use format: Koha::Plugin::<TLD>::<ORG>::<PROJECT>' );
         return;
+    }
+
+    # Each component must be alphanumeric to prevent path traversal
+    for my $part (@name_parts) {
+        if ( $part !~ /^[A-Za-z][A-Za-z0-9]*$/smx ) {
+            l( 'error', "name component '$part' must be alphanumeric; no dots, slashes, or special characters" );
+            return;
+        }
     }
 
     if ( !$m->{release_filename} ) {
@@ -97,19 +105,17 @@ sub validate_metadata {
 sub stringify_metadata {
     my ($m) = @_;
 
-    my $dumper = Data::Dumper->new( [$m] );
-    $dumper->Terse(1);
-    $dumper->Sortkeys(1);
+    # Emit each field as a safe Perl hash entry.
+    # Values are single-quoted with embedded single quotes escaped,
+    # preventing code injection through crafted metadata values.
+    my @lines;
+    for my $key ( sort keys %{$m} ) {
+        my $value = $m->{$key} // q{};
+        $value =~ s/'/\\'/g;
+        push @lines, sprintf q{    '%s' => '%s',}, $key, $value;
+    }
 
-    my $stringified = $dumper->Dump;
-
-    # Remove the enclosing curly braces.
-    $stringified =~ s/^[{]|[}]$//smxg;
-
-    # Trim leading and trailing whitespace
-    $stringified =~ s/^\s+|\s+$//smxg;
-
-    return $stringified;
+    return join "\n", @lines;
 }
 
 1;

@@ -205,16 +205,20 @@ sub _add_api_route {
         }
     );
 
-    if ( !$route_path || $route_path !~ m{^/}smx ) {
-        l( 'error', 'route path must start with /' );
+    if ( !$route_path || $route_path !~ m{^/[a-zA-Z0-9_/{}\-]*$}smx ) {
+        l( 'error', 'route path must start with / and contain only alphanumeric, _, -, {, } characters' );
         return;
     }
-    if ( !$method ) {
-        l( 'error', 'HTTP method is required' );
+    if ( !$method || $method !~ /^(get|post|put|patch|delete)$/smx ) {
+        l( 'error', 'HTTP method must be one of: get, post, put, patch, delete' );
         return;
     }
-    if ( !$operation_id ) {
-        l( 'error', 'operation ID is required' );
+    if ( !$operation_id || $operation_id !~ /^[A-Za-z_][A-Za-z0-9_]*$/smx ) {
+        l( 'error', 'operation ID must be a valid identifier (alphanumeric + underscore)' );
+        return;
+    }
+    if ( $controller && $controller !~ m{^[A-Za-z][A-Za-z0-9:]*#[A-Za-z_][A-Za-z0-9_]*$}smx ) {
+        l( 'error', 'controller must match Class::Name#method_name format' );
         return;
     }
 

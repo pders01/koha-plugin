@@ -188,6 +188,13 @@ sub _cmd_ktd {
     my ( $container, $binary ) = @_;
     $container //= 'kohadev-koha-1';
     $binary    //= 'docker';
+
+    my %allowed_binaries = map { $_ => 1 } qw( docker podman nerdctl );
+    if ( !$allowed_binaries{$binary} ) {
+        l( 'error', "binary must be one of: docker, podman, nerdctl (got: $binary)" );
+        return;
+    }
+
     l( 'info', "deploying to ktd container=$container binary=$binary" );
     _run_script( 'ktd.sh', $container, $binary );
     l( 'info', 'ktd deployment completed' );
@@ -249,7 +256,9 @@ sub _load_dotenv_legacy {
         next if $line =~ /^\s*#/;
         next if $line =~ /^\s*$/;
         if ( $line =~ /^\s*(\w+)=(.*)$/ ) {
-            $ENV{$1} = $2;
+            my $value = $2;
+            $value =~ s/[\x00\n\r]//g;    # Strip null bytes and newlines
+            $ENV{$1} = $value;
         }
     }
     close $fh;

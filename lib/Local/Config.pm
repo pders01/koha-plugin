@@ -90,7 +90,9 @@ sub config_to_env {
 
     for my $field (@FIELDS) {
         my $env_key = 'PLUGIN_' . uc $field;
-        $ENV{$env_key} = $config->{$field} // q{};
+        my $value   = $config->{$field} // q{};
+        $value =~ s/[\x00\n\r]//g;    # Strip null bytes and newlines
+        $ENV{$env_key} = $value;
     }
     return 1;
 }
@@ -133,8 +135,9 @@ sub _parse_dotenv {
         if ( $line =~ /^\s*PLUGIN_(\w+)=(.*)$/smx ) {
             my ( $key, $value ) = ( lc $1, $2 );
 
-            # Strip surrounding quotes
+            # Strip surrounding quotes and dangerous characters
             $value =~ s/^["']|["']$//g;
+            $value =~ s/[\x00\n\r]//g;
             $config{$key} = $value;
         }
     }
