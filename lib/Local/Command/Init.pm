@@ -176,15 +176,15 @@ sub _prompt_for_metadata {    ## no critic qw(Subroutines::ProhibitExcessComplex
 
         my $min_ver = $term->get_reply(
             prompt  => 'Minimum Koha version (e.g. 22.11.00.000):',
-            default => $metadata->{min_koha_version} // q{}
+            default => $metadata->{minimum_version} // q{}
         );
-        $metadata->{min_koha_version} = $min_ver // q{};
+        $metadata->{minimum_version} = $min_ver // q{};
 
         my $max_ver = $term->get_reply(
             prompt  => 'Maximum Koha version (e.g. 25.05.00.000):',
-            default => $metadata->{max_koha_version} // q{}
+            default => $metadata->{maximum_version} // q{}
         );
-        $metadata->{max_koha_version} = $max_ver // q{};
+        $metadata->{maximum_version} = $max_ver // q{};
 
         my $version = $term->get_reply(
             prompt  => 'Plugin version (semver, e.g. 0.1.0):',

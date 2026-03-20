@@ -34,8 +34,8 @@ my @FIELDS = qw(
     static_dir_name
     date_authored
     date_updated
-    min_koha_version
-    max_koha_version
+    minimum_version
+    maximum_version
 );
 
 sub find_config {
@@ -140,9 +140,15 @@ sub _parse_dotenv {
     }
     close $fh;
 
-    # Normalize key names
+    # Normalize legacy key names
     if ( exists $config{static_dirs} ) {
         $config{static_dir_name} //= delete $config{static_dirs};
+    }
+    if ( exists $config{min_koha_version} ) {
+        $config{minimum_version} //= delete $config{min_koha_version};
+    }
+    if ( exists $config{max_koha_version} ) {
+        $config{maximum_version} //= delete $config{max_koha_version};
     }
 
     return \%config;

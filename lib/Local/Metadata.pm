@@ -23,8 +23,8 @@ my @FIELDS = qw(
     date_authored
     date_updated
     description
-    max_koha_version
-    min_koha_version
+    maximum_version
+    minimum_version
     name
     release_filename
     static_dir_name
@@ -61,12 +61,12 @@ sub validate_metadata {
         l( 'warning', 'description is unset' );
     }
 
-    if ( !$m->{max_koha_version} ) {
-        l( 'warning', 'max_koha_version is unset' );
+    if ( !$m->{maximum_version} ) {
+        l( 'warning', 'maximum_version is unset' );
     }
 
-    if ( !$m->{min_koha_version} ) {
-        l( 'warning', 'min_koha_version is unset' );
+    if ( !$m->{minimum_version} ) {
+        l( 'warning', 'minimum_version is unset' );
     }
 
     if ( !$m->{name} ) {
