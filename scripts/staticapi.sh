@@ -40,7 +40,8 @@ for STATIC_DIR in "${STATIC_DIRS[@]}"; do
 
   while IFS= read -r -d '' file; do
     if [ -f "$file" ]; then
-      path_name="${file//$PLUGIN_PATH/}"
+      # Strip plugin path AND static dir name — Koha prepends /static/ automatically
+      path_name="${file//$STATIC_PATH/}"
       echo "  Creating $path_name"
       json_fragments+=("$path_name")
     fi

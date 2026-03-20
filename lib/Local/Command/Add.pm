@@ -780,7 +780,7 @@ sub _add_vue {
 
     # Create directories
     my $src_dir    = path('src/components');
-    my $static_dir = path("$plugin_dir/static/dist");
+    my $static_dir = path("$plugin_dir/dist");
     $src_dir->mkpath;
     $static_dir->mkpath;
 
@@ -810,7 +810,7 @@ sub _add_vue {
         l( 'warning', 'vite.config.js already exists, skipping' );
     }
     else {
-        my $out_dir = "$plugin_dir/static/dist";
+        my $out_dir = "$plugin_dir/dist";
         $vite_config->spew_utf8( _vite_config_template( $component_name, $out_dir ) );
         l( 'info', 'created vite.config.js' );
     }
@@ -922,6 +922,9 @@ import vue from "\@vitejs/plugin-vue";
 
 export default defineConfig({
   plugins: [vue()],
+  define: {
+    "process.env.NODE_ENV": JSON.stringify("production"),
+  },
   build: {
     lib: {
       entry: "src/main.js",
@@ -930,14 +933,11 @@ export default defineConfig({
     },
     outDir: "$out_dir",
     emptyOutDir: false,
-    rollupOptions: {
-      external: ["vue"],
-      output: {
-        globals: {
-          vue: "Vue",
-        },
-      },
-    },
+    // To use Koha's bundled Vue instead of shipping your own,
+    // uncomment the following and add an import map to your page:
+    // rollupOptions: {
+    //   external: ["vue"],
+    // },
   },
 });
 VITE

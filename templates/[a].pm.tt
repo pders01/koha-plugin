@@ -59,9 +59,11 @@ sub new {
 
 [%# API %]
 
-[% IF api %]
+[% IF api || static %]
 [%- INCLUDE hooks/api_namespace.pl -%]
+[% END %]
 
+[% IF api %]
 [%- INCLUDE hooks/api_routes.pl %]
 [% END %]
 

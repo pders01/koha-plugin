@@ -4,6 +4,17 @@
     "tags": [
       "pluginStatic"
     ],
+    "produces": [
+      "application/octet-stream",
+      "text/css",
+      "text/javascript",
+      "application/javascript",
+      "text/html",
+      "image/gif",
+      "image/png",
+      "image/jpeg",
+      "*/*"
+    ],
     "responses": {
       "200": {
         "description": "File found",
