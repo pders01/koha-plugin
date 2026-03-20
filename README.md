@@ -56,8 +56,10 @@ just binary
 - [Quickstart](docs/quickstart.md) — zero to working plugin in 5 minutes
 - [Command reference](docs/commands.md) — all commands and options
 - [Hook reference](docs/koha-plugin-hooks.md) — every Koha plugin hook with descriptions, return types, and groupings
+- [Vue Islands guide](docs/vue-islands.md) — Vue micro frontends in Koha plugins
 - [Writing a simple plugin](docs/how-to-write-a-simple-plugin.md) — minimal example
 - [POD style guide](docs/pod-style-guide.md) — conventions for hook stubs
+- [Live Circ Feed example](examples/circ-feed/) — full-featured demo plugin with API, Vue island, and polling
 
 ## Configuration
 

@@ -1,0 +1,17 @@
+{
+    "dependencies": {
+        "vue": "^3.5.0"
+    },
+    "devDependencies": {
+        "@vitejs/plugin-vue": "^5.0.0",
+        "vite": "^6.0.0"
+    },
+    "name": "koha-plugin-circfeed",
+    "private": true,
+    "scripts": {
+        "build": "vite build",
+        "dev": "vite build --watch"
+    },
+    "type": "module",
+    "version": "0.1.0"
+}

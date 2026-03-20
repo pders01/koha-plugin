@@ -228,10 +228,57 @@ The scaffolder handles all of this when you select the `static` hook during
 koha-plugin staticapi
 ```
 
-File paths in `staticapi.json` should NOT include `/static/` — Koha
-prepends it automatically. For example, a file at `<plugin_dir>/dist/App.js`
-should have the key `/dist/App.js` in the spec, which produces the URL
-`/api/v1/contrib/<namespace>/static/dist/App.js`.
+#### How Koha resolves static file paths
+
+This is the most common source of confusion. Koha's `Static#get` controller
+resolves files like this:
+
+```
+URL:  /api/v1/contrib/<namespace>/static/<filepath>
+File: <bundle_path>/<filepath>
+```
+
+It strips everything up to and including `/static/` from the URL, then
+appends the remainder to the plugin's `bundle_path`. This means:
+
+- **Files must be directly under `bundle_path`** (the plugin directory), NOT
+  in a `static/` subdirectory. A file at
+  `Koha/Plugin/Com/Example/MyPlugin/App.js` is served at
+  `/api/v1/contrib/MyPlugin/static/App.js`.
+- **Vite should output directly to the plugin directory**, not to `dist/`
+  or `static/dist/` inside it.
+- **`staticapi.json` keys** are the path portion after `/static/`. A key of
+  `/App.js` produces the route `/contrib/<ns>/static/App.js` which resolves
+  to `bundle_path/App.js`.
+
+For the `staticapi.sh` script to find your built files, set `static_dir_name`
+in your config to point at the directory where files live relative to the
+plugin path. The script scans that directory and generates keys by stripping
+the directory name prefix.
+
+#### Recommended setup for Vue islands
+
+```
+vite.config.js:  outDir: "Koha/Plugin/Com/Example/MyPlugin"
+koha-plugin.yml: static_dir_name: "."
+intranet_js:     /api/v1/contrib/MyPlugin/static/MyComponent.js
+```
+
+Or if you prefer a subdirectory for organization, just know the full path
+must be reflected in the URL:
+
+```
+vite.config.js:  outDir: "Koha/Plugin/Com/Example/MyPlugin/dist"
+koha-plugin.yml: static_dir_name: "dist"
+staticapi keys:  /MyComponent.js (NOT /dist/MyComponent.js)
+intranet_js:     /api/v1/contrib/MyPlugin/static/MyComponent.js
+file on disk:    Koha/Plugin/.../MyPlugin/dist/MyComponent.js
+resolves to:     bundle_path + "/MyComponent.js" — WRONG (missing dist/)
+```
+
+**The subdirectory approach does NOT work** because `Static#get` resolves
+relative to `bundle_path`, not to a subdirectory. Files must be directly
+under `bundle_path` or Koha won't find them.
 
 ### Known limitations
 
@@ -258,6 +305,13 @@ setup(props) {
 **CSP nonces.** Inline `<script type="module">` tags from `intranet_js`
 trigger CSP violations. As of March 2026, Koha's CSP is report-only, so
 scripts execute but violations are logged.
+
+**No SSE or WebSockets in practice.** Koha runs on Starman, a pre-fork
+blocking server. Each SSE/WS connection permanently ties up a worker
+process, and `Mojo::IOLoop` timers spin without a proper event loop
+(causing 100% CPU). Use polling instead — a 3-second interval is
+visually indistinguishable from real-time for most use cases. See
+`examples/circ-feed` for a working polling implementation.
 
 **Custom element names must contain a hyphen.** This is a web component
 spec requirement. Use names like `plugin-my-widget`.

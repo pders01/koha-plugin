@@ -1,0 +1,55 @@
+{
+    "/events/recent": {
+        "get": {
+            "operationId": "getRecentEvents",
+            "produces": [
+                "application/json"
+            ],
+            "summary": "Recent circulation events",
+            "tags": [
+                "CircFeed"
+            ],
+            "responses": {
+                "200": {
+                    "description": "Recent circulation events",
+                    "schema": {
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    }
+                },
+                "403": {
+                    "description": "Access forbidden",
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "error": {
+                                "description": "Error message",
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
+                "500": {
+                    "description": "Internal error",
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "error": {
+                                "description": "Error message",
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "x-koha-authorization": {
+                "permissions": {
+                    "catalogue": "1"
+                }
+            },
+            "x-mojo-to": "Com::Hackfest::CircFeed::EventController#recent"
+        }
+    }
+}

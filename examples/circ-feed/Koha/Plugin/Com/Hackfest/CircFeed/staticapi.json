@@ -1,0 +1,128 @@
+{
+  "/CircFeed.css": {
+    "get": {
+      "x-mojo-to": "Static#get",
+      "tags": [
+        "pluginStatic"
+      ],
+      "produces": [
+        "application/octet-stream",
+        "text/css",
+        "text/javascript",
+        "application/javascript",
+        "text/html",
+        "image/gif",
+        "image/png",
+        "image/jpeg",
+        "*/*"
+      ],
+      "responses": {
+        "200": {
+          "description": "File found",
+          "schema": {
+            "type": "file"
+          }
+        },
+        "404": {
+          "description": "File not found",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "error": {
+                "description": "An explanation for the error",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "Bad request",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "error": {
+                "description": "An explanation for the error",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "Internal server error",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "error": {
+                "description": "An explanation for the error",
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "/CircFeed.js": {
+    "get": {
+      "x-mojo-to": "Static#get",
+      "tags": [
+        "pluginStatic"
+      ],
+      "produces": [
+        "application/octet-stream",
+        "text/css",
+        "text/javascript",
+        "application/javascript",
+        "text/html",
+        "image/gif",
+        "image/png",
+        "image/jpeg",
+        "*/*"
+      ],
+      "responses": {
+        "200": {
+          "description": "File found",
+          "schema": {
+            "type": "file"
+          }
+        },
+        "404": {
+          "description": "File not found",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "error": {
+                "description": "An explanation for the error",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "Bad request",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "error": {
+                "description": "An explanation for the error",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "Internal server error",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "error": {
+                "description": "An explanation for the error",
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,12 @@
+---
+author: 'Paul Derscheid'
+date_authored: 2026-03-20
+date_updated: 2026-03-20
+description: 'Live circulation activity feed via SSE and Vue island'
+maximum_version: ''
+minimum_version: 23.11.00.000
+module: Koha::Plugin::Com::Hackfest::CircFeed
+name: Koha::Plugin::Com::Hackfest::CircFeed
+release_filename: hackfest-circfeed
+static_dir_name: static
+version: 0.1.0
