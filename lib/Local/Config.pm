@@ -113,8 +113,8 @@ sub migrate_from_dotenv {
     }
 
     save_config( $config, $target );
-    l( 'info', "migrated .env to $target" );
-    l( 'info', 'you can now remove .env and update your build scripts' );
+    rename '.env', '.env.bak' or l( 'warning', "could not rename .env to .env.bak: $!" );
+    l( 'info', "migrated .env to $target (old .env saved as .env.bak)" );
 
     return $target;
 }
