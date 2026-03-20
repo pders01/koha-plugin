@@ -18,10 +18,8 @@ if [ "$3" = "" ]; then
 fi
 
 echo "$PLUGIN_PATH"
-mkdir dist
+mkdir -p dist
 cp -r Koha dist/.
-sed -i -e "s/{VERSION}/${3}/g" "dist/${PLUGIN_PATH}.pm"
-sed -i -e "s/1900-01-01/$(date -I)/g" "dist/${PLUGIN_PATH}.pm"
 (
   cd dist || exit 1
   zip -r ../"${2}-${3}".kpz ./Koha
