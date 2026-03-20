@@ -15,16 +15,20 @@ my $local_bin   = catdir( $project_dir, 'local', 'bin' );
 my $script_path = catfile( $bin_dir, 'koha-plugin.pl' );
 my $output_path = catfile( $dist_dir, 'koha-plugin' );
 
-# Resolve pp from local/bin (carton-installed) to avoid system pp conflicts
+# Resolve pp: try carton's local/bin, then PATH
 my $pp = catfile( $local_bin, 'pp' );
 if ( !-x $pp ) {
-    # Fall back to PATH (e.g. when run via carton exec)
     $pp = 'pp';
 }
 
-# Ensure pp can find its own modules and project dependencies
-$ENV{PERL5LIB} = join ':', catdir( $project_dir, 'local', 'lib', 'perl5' ),
-    catdir( $project_dir, 'lib' ), ( $ENV{PERL5LIB} // '' );
+# Add project lib paths to PERL5LIB so pp can find all modules.
+# Carton's local/lib/perl5 is included if present; deps installed
+# via cpanm, local::lib, or system packages are found via existing PERL5LIB/INC.
+my @extra_lib = ( catdir( $project_dir, 'lib' ) );
+my $carton_lib = catdir( $project_dir, 'local', 'lib', 'perl5' );
+push @extra_lib, $carton_lib if -d $carton_lib;
+
+$ENV{PERL5LIB} = join ':', @extra_lib, ( $ENV{PERL5LIB} // '' );
 
 unless ( -d $dist_dir ) {
     make_path($dist_dir);
@@ -37,16 +41,15 @@ my @assets = (
     catdir( $project_dir, 'lib' )       . ';lib',
 );
 
-my $lib_dir   = catdir( $project_dir, 'lib' );
-my $local_lib = catdir( $project_dir, 'local', 'lib', 'perl5' );
+my @inc_paths = ( catdir( $project_dir, 'lib' ) );
+push @inc_paths, $carton_lib if -d $carton_lib;
 
 my @command = (
     $pp,
     '-o', $output_path,
 
     # Include paths so pp can find Local:: and CPAN modules
-    '-I', $lib_dir,
-    '-I', $local_lib,
+    ( map { ( '-I', $_ ) } @inc_paths ),
 
     # Local modules
     '-M', 'Local::Util',

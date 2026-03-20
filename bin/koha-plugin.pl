@@ -5,13 +5,17 @@ use feature 'say';
 use File::Basename qw( dirname );
 use File::Path     qw( remove_tree );
 
-# In dev mode, add local lib paths; in PAR mode, modules are bundled
+# In dev mode, add lib paths; in PAR mode, modules are bundled
 BEGIN {
     unless ( $ENV{PAR_TEMP} ) {
         my $root = dirname( dirname(__FILE__) );
         require lib;
         lib->import("$root/lib");
-        lib->import("$root/local/lib/perl5");
+
+        # Support carton (local/lib/perl5), but don't require it.
+        # Users can also set PERL5LIB, use local::lib, or install deps globally.
+        my $carton_lib = "$root/local/lib/perl5";
+        lib->import($carton_lib) if -d $carton_lib;
     }
 }
 

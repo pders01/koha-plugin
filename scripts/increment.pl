@@ -3,8 +3,8 @@
 use strict;
 use warnings;
 use feature 'signatures';
-use lib './local/lib/perl5';
 use lib './lib';
+BEGIN { my $l = './local/lib/perl5'; unshift @INC, $l if -d $l }
 
 use Carp         qw( croak );
 use DateTime     ();

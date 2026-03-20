@@ -2,6 +2,10 @@
 
 set dotenv-load
 
+# Wrapper for running Perl scripts with the right lib paths.
+# Uses carton if available, otherwise relies on PERL5LIB / system modules.
+perl_exec := if path_exists("local/lib/perl5") == "true" { "carton exec -- perl" } else { "perl" }
+
 # Lists available commands.
 default:
   @just --list
@@ -14,21 +18,21 @@ clean:
 
 # Initialises a new koha plugin based on your input.
 init:
-  carton exec ./scripts/init.pl
+  {{perl_exec}} ./scripts/init.pl
 
 # Adds a component to your initialised koha plugin based on your input.
 add component:
-  carton exec ./scripts/add.pl {{component}}
+  {{perl_exec}} ./scripts/add.pl {{component}}
 
-# Increments the version in your local .env, base module and package.json if present. This also updates date_updated!
+# Increments the version in your local config, base module and package.json if present. This also updates date_updated!
 increment type='patch' times='1':
-  ./scripts/increment.pl --version "${PLUGIN_VERSION}" --name "${PLUGIN_NAME}" --type {{type}} --times {{times}}
+  {{perl_exec}} ./scripts/increment.pl --version "${PLUGIN_VERSION}" --name "${PLUGIN_NAME}" --type {{type}} --times {{times}}
 
 # Creates a kpz file by zipping the current state of the `Koha` directory.
 package:
   ./scripts/package.sh "${PLUGIN_NAME}" "${PLUGIN_RELEASE_FILENAME}" "${PLUGIN_VERSION}"
 
-# Updates the staticapi.json file within the plugin to expose all files within the `static` directory. 
+# Updates the staticapi.json file within the plugin to expose all files within the `static` directory.
 staticapi:
   ./scripts/staticapi.sh "${PLUGIN_NAME}" "${PLUGIN_STATIC_DIR_NAME}"
 
@@ -41,4 +45,4 @@ update-meta:
 
 # Build standalone binary
 binary:
-  carton exec -- perl scripts/build-binary.pl
+  {{perl_exec}} scripts/build-binary.pl
