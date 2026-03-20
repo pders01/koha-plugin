@@ -225,8 +225,8 @@ sub _add_api_route {
         l( 'error', 'operation ID must be a valid identifier (alphanumeric + underscore)' );
         return;
     }
-    if ( $controller && $controller !~ m{^[A-Za-z][A-Za-z0-9:]*#[A-Za-z_][A-Za-z0-9_]*$}smx ) {
-        l( 'error', 'controller must match Class::Name#method_name format' );
+    if ( $controller && $controller !~ m{^[A-Za-z][A-Za-z0-9:]*(\#[A-Za-z_][A-Za-z0-9_]*)?$}sm ) {
+        l( 'error', 'controller must match ClassName or ClassName#method format (no spaces or special chars)' );
         return;
     }
 

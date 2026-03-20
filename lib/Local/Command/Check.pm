@@ -40,7 +40,14 @@ sub run_check {
     # --- Base module ---
     my $metadata   = metadata_from_env();
     my $components = [ split /::/smx, $metadata->{name} // q{} ];
-    my $base_path  = path( join( q{/}, @{$components} ) . '.pm' );
+    if ( !$metadata->{name} || @{$components} < 3 ) {
+        _err('plugin name not set in config or environment');
+        _err('run "koha-plugin init" first');
+        $errors++;
+        return _summary( $errors, $warnings );
+    }
+
+    my $base_path = path( join( q{/}, @{$components} ) . '.pm' );
 
     if ( !$base_path->exists ) {
         _err("base module not found: $base_path");
