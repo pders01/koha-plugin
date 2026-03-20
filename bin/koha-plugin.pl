@@ -29,7 +29,7 @@ use Local::Command::Increment qw( run_increment );
 use Local::Config             qw( load_config find_config config_to_env migrate_from_dotenv );
 use Local::Util               qw( l asset_dir );
 
-my $VERSION = 'v1.0.0';
+my $VERSION = 'v1.1.0';
 
 # Load config: YAML/JSON config file, .env fallback, PAR-bundled last
 _load_config();
