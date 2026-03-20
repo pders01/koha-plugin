@@ -87,6 +87,7 @@ Commands:
         api-route                 OpenAPI route + controller stub
         migration                 Numbered SQL migration file
         hook                      Add a hook method to an existing plugin module
+        background-job            Background job class + registration
     increment [options]         Increment version (patch, minor, major)
     package                     Create a .kpz file
     clean                       Remove Koha/ directory and package.json
@@ -134,6 +135,7 @@ sub _cmd_add {
         l( 'info',  '  api-route  - OpenAPI route (--path, --method, --operation, --controller, --permission)' );
         l( 'info',  '  migration  - SQL migration file (--description)' );
         l( 'info',  '  hook       - Add hook to existing plugin (--type <hook_name>)' );
+        l( 'info',  '  background-job - Job class + registration (--type <job_name>)' );
         exit 1;
     }
 

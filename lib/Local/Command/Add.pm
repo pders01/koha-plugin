@@ -25,11 +25,12 @@ our @EXPORT_OK = qw( run_add );
 Readonly my $CONST => { INDEX_PROJECT => 4 };
 
 my %COMPONENTS = (
-    action      => \&_add_action,
-    node        => \&_add_node,
-    'api-route' => \&_add_api_route,
-    migration   => \&_add_migration,
-    hook        => \&_add_hook,
+    action           => \&_add_action,
+    node             => \&_add_node,
+    'api-route'      => \&_add_api_route,
+    migration        => \&_add_migration,
+    hook             => \&_add_hook,
+    'background-job' => \&_add_background_job,
 );
 
 sub run_add {
@@ -586,6 +587,153 @@ sub _add_hook {
     }
 
     return 1;
+}
+
+sub _add_background_job {
+    my (%opts)     = @_;
+    my $metadata   = metadata_from_env();
+    my $components = [ split /::/smx, $metadata->{name} // q{} ];
+
+    if ( @{$components} != 5 ) {
+        l( 'error', 'plugin name must be set in config before adding background jobs' );
+        return;
+    }
+
+    my $job_name = resolve(
+        $opts{type},
+        sub {
+            my $term = Term::ReadLine->new('koha-plugin add background-job');
+            $term->get_reply( prompt => 'Job type name (e.g. sync_records):', default => q{} );
+        }
+    );
+
+    if ( !$job_name || $job_name !~ /^[a-z][a-z0-9_]*$/smx ) {
+        l( 'error', 'job type must be lowercase alphanumeric with underscores' );
+        return;
+    }
+
+    # Derive class name: sync_records -> SyncRecords
+    my $class_name = resolve( $opts{class}, join( q{}, map { ucfirst $_ } split /_/smx, $job_name ) );
+
+    my $tld     = $components->@[2];
+    my $org     = $components->@[3];
+    my $project = $components->@[4];
+
+    my $full_class = "Koha::Plugin::${tld}::${org}::${project}::${class_name}";
+    my $job_path   = path( join( q{/}, 'Koha', 'Plugin', $tld, $org, $project, $class_name ) . '.pm' );
+
+    # Create the job class
+    if ( $job_path->exists ) {
+        l( 'warning', "$job_path already exists, skipping class creation" );
+    }
+    else {
+        $job_path->parent->mkpath;
+        $job_path->spew_utf8( _background_job_template( $full_class, $job_name ) );
+        l( 'info', "created job class $job_path" );
+    }
+
+    # Update background_tasks in the base module
+    my $base_module = path( join( q{/}, $components->@* ) . '.pm' );
+    if ( !$base_module->exists ) {
+        l( 'error', "base module not found: $base_module" );
+        return;
+    }
+
+    my $content = $base_module->slurp_utf8;
+
+    # Check if background_tasks hook exists
+    if ( $content !~ /sub \s+ background_tasks\b/smx ) {
+        l( 'error', "background_tasks hook not found in $base_module (run: koha-plugin add hook --type background_tasks)" );
+        return;
+    }
+
+    # Check if this job is already registered
+    if ( $content =~ /\Q$job_name\E\s*=>/smx ) {
+        l( 'warning', "job '$job_name' is already registered in background_tasks" );
+        return 1;
+    }
+
+    # Update the return hash in background_tasks
+    my $entry = "        $job_name => '$full_class',\n";
+    if ( $content =~ s/(sub \s+ background_tasks \s* \{ \s* return \s*) \{\}; /$1\{\n$entry    };/smx ) {
+
+        # Replaced empty hash
+    }
+    elsif ( $content =~ s/(sub \s+ background_tasks \s* \{ \s* return \s* \{ .+?) (\n \s* \}; )/$1\n$entry$2/smx ) {
+
+        # Appended to existing hash
+    }
+    else {
+        l( 'warning', "could not auto-register '$job_name' — add to background_tasks manually:" );
+        l( 'info',    "    $job_name => '$full_class'" );
+    }
+
+    $base_module->spew_utf8($content);
+    l( 'info', "registered job '$job_name' in background_tasks" );
+
+    return 1;
+}
+
+sub _background_job_template {
+    my ( $package, $job_type ) = @_;
+
+    return <<"JOB";
+package $package;
+
+use Modern::Perl;
+
+use base 'Koha::BackgroundJob';
+
+=head1 NAME
+
+$package - Background job
+
+=head1 API
+
+=head2 Class methods
+
+=head3 job_type
+
+=cut
+
+sub job_type {
+    return '$job_type';
+}
+
+=head3 process
+
+=cut
+
+sub process {
+    my ( \$self, \$args ) = \@_;
+
+    \$self->start;
+
+    my \$data = {};
+
+    # TODO: implement job logic here
+
+    \$self->finish( { data => \$data } );
+}
+
+=head3 enqueue
+
+=cut
+
+sub enqueue {
+    my ( \$self, \$args ) = \@_;
+
+    \$self->SUPER::enqueue(
+        {
+            job_size  => 1,
+            job_args  => \$args,
+            job_queue => 'default',
+        }
+    );
+}
+
+1;
+JOB
 }
 
 1;
