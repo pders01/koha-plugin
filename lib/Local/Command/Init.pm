@@ -149,12 +149,44 @@ sub run_init {
         save_config( $metadata, 'koha-plugin.yml' );
         l( 'info', 'created koha-plugin.yml' );
 
-        # Create empty openapi.json when api hooks are selected
         my %selected = map { $_ => 1 } $hooks->@*;
+
+        # Generate action templates for selected UI hooks
+        my @action_hooks = grep { $selected{$_} } qw(admin configure report tool);
+        if (@action_hooks) {
+            my $action_tt = Template->new(
+                {   INCLUDE_PATH => asset_dir('templates'),
+                    START_TAG    => '<%',
+                    END_TAG      => '%>',
+                    FILTERS      => {
+                        capitalize => sub {
+                            my $text = shift;
+                            $text =~ s/^(\w)/\U$1/smx;
+                            return $text;
+                        }
+                    }
+                }
+            );
+            for my $action (@action_hooks) {
+                $action_tt->process(
+                    'sites/action.tt',
+                    { project => $components->@[ $CONST->{'INDEX_PROJECT'} ], action => $action },
+                    "$path/$action.tt",
+                );
+                if ( $action_tt->error ) {
+                    l( 'warning', "failed to generate $action.tt: " . $action_tt->error );
+                }
+                else {
+                    l( 'info', "created $action.tt" );
+                }
+            }
+        }
+
+        # Create empty openapi.json when api hooks are selected
         if ( $selected{api} ) {
             my $openapi_dest = path("$path/openapi.json");
             $openapi_dest->spew_utf8("{}\n");
-            l( 'info', "created $openapi_dest — run 'koha-plugin add api-route' to add routes" );
+            l( 'info', "created openapi.json — run 'koha-plugin add api-route' to add routes" );
         }
 
         1;
