@@ -1,9 +1,8 @@
 #!/usr/bin/env just --justfile
 
-set dotenv-load
-
-# Wrapper for running Perl scripts with the right lib paths.
+# Wrapper for running the CLI with the right lib paths.
 # Uses carton if available, otherwise relies on PERL5LIB / system modules.
+cli := if path_exists("local/lib/perl5") == "true" { "carton exec -- perl bin/koha-plugin.pl" } else { "perl bin/koha-plugin.pl" }
 perl_exec := if path_exists("local/lib/perl5") == "true" { "carton exec -- perl" } else { "perl" }
 
 # Lists available commands.
@@ -12,36 +11,38 @@ default:
 
 # Careful! This removes Koha/ and package.json
 clean:
-  #!/usr/bin/env bash
-  rm -rf Koha;
-  rm -f package.json
+  {{cli}} clean
 
 # Initialises a new koha plugin based on your input.
 init:
-  {{perl_exec}} ./scripts/init.pl
+  {{cli}} init
 
 # Adds a component to your initialised koha plugin based on your input.
 add component:
-  {{perl_exec}} ./scripts/add.pl {{component}}
+  {{cli}} add {{component}}
 
 # Increments the version in your local config, base module and package.json if present. This also updates date_updated!
 increment type='patch' times='1':
-  {{perl_exec}} ./scripts/increment.pl --version "${PLUGIN_VERSION}" --name "${PLUGIN_NAME}" --type {{type}} --times {{times}}
+  {{cli}} increment --type {{type}} --times {{times}}
 
 # Creates a kpz file by zipping the current state of the `Koha` directory.
 package:
-  ./scripts/package.sh "${PLUGIN_NAME}" "${PLUGIN_RELEASE_FILENAME}" "${PLUGIN_VERSION}"
+  {{cli}} package
 
 # Updates the staticapi.json file within the plugin to expose all files within the `static` directory.
 staticapi:
-  ./scripts/staticapi.sh "${PLUGIN_NAME}" "${PLUGIN_STATIC_DIR_NAME}"
+  {{cli}} staticapi
 
 ktd container="kohadev-koha-1" binary="docker":
-  ./scripts/ktd.sh {{container}} {{binary}}
+  {{cli}} ktd {{container}} {{binary}}
 
 # Attempts to update the koha-plugin repository itself. If you've updated core components, you'll have to resolve the conflicts yourself, though.
 update-meta:
-  ./scripts/update-meta.sh
+  {{cli}} update-meta
+
+# Migrate legacy .env to config file
+migrate format='yml':
+  {{cli}} migrate {{format}}
 
 # Build standalone binary
 binary:
