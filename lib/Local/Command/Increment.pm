@@ -10,7 +10,7 @@ use Path::Tiny qw( path );
 use Readonly   qw( Readonly );
 
 use Local::Config qw( load_config save_config find_config );
-use Local::Util   qw( l );
+use Local::Util   qw( l json_encoder );
 
 use Exporter 'import';
 
@@ -150,7 +150,7 @@ sub _update_package_json {
 
     $data->{version} = $new_version;
 
-    my $j = JSON->new->utf8->pretty->canonical;
+    my $j = json_encoder();
     return $package_json->spew_utf8( $j->encode($data) );
 }
 

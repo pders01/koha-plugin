@@ -235,7 +235,7 @@ subtest 'api route composition' => sub {
     };
 
     require JSON;
-    my $j = JSON->new->utf8->pretty->canonical;
+    my $j = JSON->new->utf8->pretty->canonical->indent_length(4)->space_before(0);
     Path::Tiny::path("$plugin_dir/openapi.json")->spew_utf8( $j->encode($spec) );
 
     # Verify the spec

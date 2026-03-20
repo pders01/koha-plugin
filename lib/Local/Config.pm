@@ -7,7 +7,7 @@ use Carp       qw( croak );
 use JSON       qw( decode_json encode_json );
 use YAML::Tiny ();
 
-use Local::Util qw( l );
+use Local::Util qw( l json_encoder );
 
 use Exporter 'import';
 
@@ -184,7 +184,7 @@ sub _load_json {
 
 sub _save_json {
     my ( $data, $path ) = @_;
-    my $j = JSON->new->utf8->pretty->canonical;
+    my $j = json_encoder();
     open my $fh, '>', $path or croak "Cannot open $path for writing: $!";
     print {$fh} $j->encode($data) or croak "Cannot write to $path: $!";
     close $fh;

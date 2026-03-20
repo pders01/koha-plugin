@@ -5,11 +5,12 @@ use warnings;
 
 use Carp            qw( croak );
 use File::Spec      ();
+use JSON            qw( );
 use Term::ANSIColor qw( colored );
 
 use Exporter 'import';
 
-our @EXPORT_OK = qw( l asset_dir resolve );
+our @EXPORT_OK = qw( l asset_dir resolve json_encoder );
 
 ## no critic qw(ValuesAndExpressions::RequireInterpolationOfMetachars)
 
@@ -40,6 +41,10 @@ sub asset_dir {
     return defined $subdir
         ? File::Spec->catdir( $base, $subdir )
         : $base;
+}
+
+sub json_encoder {
+    return JSON->new->utf8->pretty->canonical->indent_length(4)->space_before(0);
 }
 
 sub resolve {
