@@ -365,7 +365,7 @@ sub _add_migration {
     $migrations_dir->mkpath;
 
     # Determine next migration number
-    my @existing = sort glob "$migrations_dir/*.sql";
+    my @existing    = sort glob "$migrations_dir/*.sql";
     my $next_number = 1;
     if (@existing) {
         my ($last_file) = reverse @existing;

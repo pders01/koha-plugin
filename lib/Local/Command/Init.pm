@@ -183,10 +183,10 @@ GITIGNORE
                 }
             );
             for my $action (@action_hooks) {
+
                 # configure gets its own template with form handling
                 my $source = $action eq 'configure' ? 'sites/configure.tt' : 'sites/action.tt';
-                $action_tt->process( $source,
-                    { project => $components->@[ $CONST->{'INDEX_PROJECT'} ], action => $action },
+                $action_tt->process( $source, { project => $components->@[ $CONST->{'INDEX_PROJECT'} ], action => $action },
                     "$path/$action.tt", );
                 if ( $action_tt->error ) {
                     l( 'warning', "failed to generate $action.tt: " . $action_tt->error );
