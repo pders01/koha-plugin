@@ -4,16 +4,11 @@
 
 =head3 configure
 
-This subroutine provides a hook for adding a configuration interface to the plugin.
+This subroutine provides the plugin's configuration interface.
 
-Plugins can use this method to either display a configuration page where users can adjust
-settings or save the updated settings submitted via a form. The actual logic for rendering
-the configuration page or storing data is flexible and up to the plugin’s needs.
-
-Commonly, the configuration might include fields for enabling or disabling features, setting values,
-and storing user-specific data.
-
-The method is designed to be extended and adapted to various plugin requirements.
+On GET (no 'save' param): renders the configure.tt template with current settings
+pre-filled via C<retrieve_data>. On POST (save param present): stores form data
+via C<store_data> and redirects to the plugin home page.
 
 Context: Add a configuration interface for the plugin (render and/or save form data).
 
@@ -31,7 +26,7 @@ Context: Add a configuration interface for the plugin (render and/or save form d
 
 =item * Returns
 
-Void (HTML output via output_html)
+Void (HTML output via output_html, or redirect via go_home)
 
 =back
 
@@ -39,8 +34,22 @@ Void (HTML output via output_html)
 
 sub configure {
     my ( $self, $args ) = @_;
+    my $cgi = $self->{'cgi'};
 
+    if ( $cgi->param('save') ) {
+        # Store settings from the form submission
+        $self->store_data({
+            # example_setting => $cgi->param('example_setting'),
+        });
+        $self->go_home();
+        return;
+    }
+
+    # Render the configuration form with current values
     my $template = $self->get_template( { file => 'configure.tt' } );
+    $template->param(
+        # example_setting => $self->retrieve_data('example_setting'),
+    );
 
     return $self->output_html( $template->output );
 }
