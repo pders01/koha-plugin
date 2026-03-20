@@ -75,6 +75,7 @@ Readonly my $HOOKS => [
         notices_content
         background_tasks
         before_send_messages
+        patron_generate_userid
         cronjob_nightly
         to_marc
         transform_prepared_letter
