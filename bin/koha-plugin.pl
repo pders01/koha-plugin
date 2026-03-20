@@ -155,6 +155,7 @@ sub _cmd_add {
         'description=s' => \$opts{description},
         'name=s'        => \$opts{name},
         'tag=s'         => \$opts{tag},
+        'class=s'       => \$opts{class},
     );
 
     # Remove undef entries so handlers can distinguish "not provided" from "empty"

@@ -104,7 +104,6 @@ sub _add_action {
 sub _add_node {
     my $metadata = metadata_from_env();
 
-    my $j     = JSON->new;
     my $error = gensym;
     my $pid   = open3( undef, undef, $error, 'npm', 'init', '-y' );
 
@@ -120,7 +119,7 @@ sub _add_node {
         return;
     }
 
-    my $json = $j->utf8->decode( $path->slurp_utf8 );
+    my $json = decode_json( $path->slurp_utf8 );
     if ( $metadata->{name} ) {
         $json->{'name'} = lc join q{-}, [ split /::/smx, $metadata->{name} ]->@[ 0 .. 1, $CONST->{'INDEX_PROJECT'} ];
     }
@@ -146,7 +145,7 @@ sub _add_node {
         $json->{'main'} = 'src/index';
     }
 
-    $path->spew_utf8( $j->utf8->pretty->encode($json) );
+    $path->spew_utf8( json_encoder()->encode($json) );
 
     return 1;
 }
@@ -492,6 +491,20 @@ SQL
     return 1;
 }
 
+my %HOOK_BUNDLES = (
+    'api (api_namespace + api_routes)'                    => [qw( api_namespace api_routes )],
+    'static (static_routes + api_namespace)'              => [qw( api_namespace static_routes )],
+    'opac_online_payment (payment + begin/end/threshold)' =>
+        [qw( opac_online_payment opac_online_payment_begin opac_online_payment_end opac_online_payment_threshold )],
+);
+
+# Reverse lookup: CLI shorthand -> bundle
+my %HOOK_ALIASES = (
+    api                 => $HOOK_BUNDLES{'api (api_namespace + api_routes)'},
+    static              => $HOOK_BUNDLES{'static (static_routes + api_namespace)'},
+    opac_online_payment => $HOOK_BUNDLES{'opac_online_payment (payment + begin/end/threshold)'},
+);
+
 sub _add_hook {
     my (%opts)     = @_;
     my $metadata   = metadata_from_env();
@@ -507,10 +520,26 @@ sub _add_hook {
     my @available     = map {s{.*/|\.pl$}{}gr} glob "$hooks_dir/*.pl";
     my %available_set = map { $_ => 1 } @available;
 
-    my $hook_name = resolve( $opts{type}, sub { choose( [ sort @available ], { prompt => 'Select hook to add:' } ) } );
+    # Build chooser list: bundles first, then individual hooks
+    my @chooser_items = ( sort keys %HOOK_BUNDLES, '---', sort @available );
 
-    if ( !$hook_name || !$available_set{$hook_name} ) {
-        l( 'error', "unknown hook: $hook_name" );
+    my $selection = resolve( $opts{type}, sub { choose( \@chooser_items, { prompt => 'Select hook or bundle to add:' } ) } );
+
+    return if !$selection || $selection eq '---';
+
+    # Resolve selection to a list of hooks
+    my @hooks_to_add;
+    if ( $HOOK_BUNDLES{$selection} ) {
+        @hooks_to_add = $HOOK_BUNDLES{$selection}->@*;
+    }
+    elsif ( $HOOK_ALIASES{$selection} ) {
+        @hooks_to_add = $HOOK_ALIASES{$selection}->@*;
+    }
+    elsif ( $available_set{$selection} ) {
+        @hooks_to_add = ($selection);
+    }
+    else {
+        l( 'error', "unknown hook: $selection" );
         return;
     }
 
@@ -521,35 +550,48 @@ sub _add_hook {
         return;
     }
 
-    # Check if the hook already exists
-    my $content = $base_module->slurp_utf8;
-    if ( $content =~ /sub\s+\Q$hook_name\E\b/smx ) {
-        l( 'warning', "$hook_name is already implemented in $base_module" );
-        return 1;
+    my $content    = $base_module->slurp_utf8;
+    my $project    = $components->@[4];
+    my $plugin_dir = path( join q{/}, $components->@* );
+    my $tt         = Template->new( { INCLUDE_PATH => $hooks_dir } );
+
+    for my $hook_name (@hooks_to_add) {
+
+        # Skip if already present
+        if ( $content =~ /sub \s+ \Q$hook_name\E\b/smx ) {
+            l( 'warning', "$hook_name is already implemented, skipping" );
+            next;
+        }
+
+        # Render the hook template
+        my $rendered;
+        $tt->process( "$hook_name.pl", { project => $project }, \$rendered );
+        if ( $tt->error ) {
+            l( 'error', "template processing failed for $hook_name: " . $tt->error );
+            next;
+        }
+
+        # Insert before the final 1;
+        $content =~ s/^(1;\s*)$/\n$rendered\n$1/smx;
+        l( 'info', "added hook '$hook_name'" );
+
+        # Generate companion files
+        _hook_companions( $hook_name, $project, $plugin_dir );
     }
 
-    # Render the hook template through TT
-    my $project = $components->@[4];
-    my $tt      = Template->new( { INCLUDE_PATH => $hooks_dir } );
-    my $rendered;
-    $tt->process( "$hook_name.pl", { project => $project }, \$rendered, );
-    if ( $tt->error ) {
-        l( 'error', 'template processing failed: ' . $tt->error );
-        return;
-    }
-
-    # Insert before the final 1;
-    $content =~ s/^(1;\s*)$/\n$rendered\n$1/smx;
     $base_module->spew_utf8($content);
 
-    l( 'info', "added hook '$hook_name' to $base_module" );
+    return 1;
+}
 
-    # If this is a UI hook, also generate the template file
+sub _hook_companions {
+    my ( $hook_name, $project, $plugin_dir ) = @_;
+
+    # UI hooks get a template file
     my %ui_hooks = map { $_ => 1 } qw(admin configure report tool);
     if ( $ui_hooks{$hook_name} ) {
-        my $plugin_dir = path( join q{/}, $components->@* );
-        my $source     = $hook_name eq 'configure' ? 'sites/configure.tt' : 'sites/action.tt';
-        my $dest       = "$plugin_dir/$hook_name.tt";
+        my $source = $hook_name eq 'configure' ? 'sites/configure.tt' : 'sites/action.tt';
+        my $dest   = "$plugin_dir/$hook_name.tt";
         if ( !-e $dest ) {
             my $action_tt = Template->new(
                 {   INCLUDE_PATH => asset_dir('templates'),
@@ -569,20 +611,19 @@ sub _add_hook {
         }
     }
 
-    # If this is the api hook, create openapi.json
+    # API hooks get openapi.json
     if ( $hook_name eq 'api_namespace' || $hook_name eq 'api_routes' ) {
-        my $openapi = path( join( q{/}, $components->@* ) . '/openapi.json' );
+        my $openapi = path("$plugin_dir/openapi.json");
         if ( !$openapi->exists ) {
             $openapi->parent->mkpath;
             $openapi->spew_utf8("{}\n");
-            l( 'info', "created openapi.json — run 'koha-plugin add api-route' to add routes" );
+            l( 'info', "created openapi.json" );
         }
     }
 
-    # If this is static_routes, copy staticapi.json
+    # Static routes get staticapi.json
     if ( $hook_name eq 'static_routes' ) {
-        my $plugin_dir = path( join q{/}, $components->@* );
-        my $dest       = path("$plugin_dir/staticapi.json");
+        my $dest = path("$plugin_dir/staticapi.json");
         if ( !$dest->exists ) {
             my $src = path( asset_dir('templates/staticapi.json') );
             if ( $src->exists ) {
@@ -593,7 +634,7 @@ sub _add_hook {
         }
     }
 
-    return 1;
+    return;
 }
 
 sub _add_background_job {
