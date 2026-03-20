@@ -23,7 +23,7 @@ use Local::Command::Init      qw( run_init );
 use Local::Command::Add       qw( run_add );
 use Local::Command::Increment qw( run_increment );
 use Local::Config             qw( load_config find_config config_to_env migrate_from_dotenv );
-use Local::Util               qw( asset_dir );
+use Local::Util               qw( l asset_dir );
 
 my $VERSION = 'v1.0.0';
 
@@ -97,32 +97,28 @@ USAGE
 }
 
 sub _cmd_clean {
-    say 'Cleaning...';
+    l( 'info', 'cleaning...' );
     if ( -d 'Koha' ) {
         remove_tree('Koha');
     }
     if ( -e 'package.json' ) {
         unlink 'package.json';
     }
-    say 'Clean completed successfully';
+    l( 'info', 'clean completed' );
 }
 
 sub _cmd_init {
-    say 'Initializing new Koha plugin...';
     run_init();
-    say 'Initialization completed successfully';
 }
 
 sub _cmd_add {
     my ($component) = @_;
     if ( !$component ) {
-        say 'Usage: koha-plugin add <component>';
-        say 'Components: action, node, api-route';
+        l( 'error', 'usage: koha-plugin add <component>' );
+        l( 'info', 'components: action, node, api-route' );
         exit 1;
     }
-    say "Adding component: $component";
     run_add($component);
-    say "Component $component added successfully";
 }
 
 sub _cmd_increment {
@@ -137,41 +133,39 @@ sub _cmd_increment {
         'times=i' => \$times,
     );
 
-    say "Incrementing version ($type) by $times...";
     run_increment(
         version => $ENV{PLUGIN_VERSION},
         name    => $ENV{PLUGIN_NAME},
         type    => $type,
         times   => $times,
     );
-    say 'Version incremented successfully';
 }
 
 sub _cmd_package {
-    say 'Packaging plugin...';
+    l( 'info', 'packaging plugin...' );
     _run_script( 'package.sh', $ENV{PLUGIN_NAME}, $ENV{PLUGIN_RELEASE_FILENAME}, $ENV{PLUGIN_VERSION} );
-    say 'Plugin packaged successfully';
+    l( 'info', 'plugin packaged' );
 }
 
 sub _cmd_staticapi {
-    say 'Updating static API...';
+    l( 'info', 'updating static API...' );
     _run_script( 'staticapi.sh', $ENV{PLUGIN_NAME}, $ENV{PLUGIN_STATIC_DIR_NAME} );
-    say 'Static API updated successfully';
+    l( 'info', 'static API updated' );
 }
 
 sub _cmd_ktd {
     my ( $container, $binary ) = @_;
     $container //= 'kohadev-koha-1';
     $binary    //= 'docker';
-    say "Running ktd with container=$container, binary=$binary";
+    l( 'info', "deploying to ktd container=$container binary=$binary" );
     _run_script( 'ktd.sh', $container, $binary );
-    say 'KTD completed successfully';
+    l( 'info', 'ktd deployment completed' );
 }
 
 sub _cmd_update_meta {
-    say 'Updating metadata...';
+    l( 'info', 'updating repository...' );
     _run_script('update-meta.sh');
-    say 'Metadata updated successfully';
+    l( 'info', 'repository updated' );
 }
 
 sub _cmd_migrate {
