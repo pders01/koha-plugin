@@ -10,9 +10,7 @@ Context: Post-CRUD biblio hook. Use to enqueue background jobs or notify externa
 
 =item * C<$self>
 
-=item * C<$action> - 'create' | 'update' | 'delete'
-
-=item * C<$biblio> - HashRef or object with biblio context
+=item * C<$params> - HashRef with keys: C<action> ('create'|'update'|'delete'), C<payload> (HashRef with C<biblio>, C<biblio_id>)
 
 =back
 
@@ -25,9 +23,11 @@ Void
 =cut
 
 sub after_biblio_action {
-    my ( $self, $action, $biblio ) = @_;
+    my ( $self, $params ) = @_;
+
+    # my $action     = $params->{action};
+    # my $biblio     = $params->{payload}{biblio};
+    # my $biblio_id  = $params->{payload}{biblio_id};
 
     return;
 }
-
-

@@ -6,7 +6,13 @@ Context: Called after AddAuthority, ModAuthority, or DelAuthority.
 
 =item * Parameters
 
-C<$self>, C<$action>, C<$authority>
+=over 8
+
+=item * C<$self>
+
+=item * C<$params> - HashRef with keys: C<action>, C<payload> (HashRef with C<authority>)
+
+=back
 
 =item * Returns
 
@@ -17,8 +23,10 @@ Void
 =cut
 
 sub after_authority_action {
-    my ( $self, $action, $authority ) = @_;
+    my ( $self, $params ) = @_;
+
+    # my $action    = $params->{action};
+    # my $authority = $params->{payload}{authority};
+
     return;
 }
-
-

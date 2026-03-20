@@ -46,5 +46,5 @@ sub intranet_catalog_biblio_tab {
     # });
 
     my @tabs;
-    return \@tabs;
+    return @tabs;
 }

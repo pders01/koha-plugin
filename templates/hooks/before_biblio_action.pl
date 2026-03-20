@@ -6,7 +6,13 @@ Context: Pre-CRUD biblio hook. Return a value to influence or block the operatio
 
 =item * Parameters
 
-C<$self>, C<$action>, C<$biblio>
+=over 8
+
+=item * C<$self>
+
+=item * C<$params> - HashRef with keys: C<action> ('create'|'update'|'delete'), C<payload> (HashRef with C<biblio>)
+
+=back
 
 =item * Returns
 
@@ -17,9 +23,10 @@ Implementation-defined (e.g., undef for OK; a message/structure to block).
 =cut
 
 sub before_biblio_action {
-    my ( $self, $action, $biblio ) = @_;
+    my ( $self, $params ) = @_;
+
+    # my $action = $params->{action};
+    # my $biblio = $params->{payload}{biblio};
 
     return;
 }
-
-

@@ -6,7 +6,13 @@ Context: Called after recall-related actions are performed.
 
 =item * Parameters
 
-C<$self>, C<$action>, C<$recall>
+=over 8
+
+=item * C<$self>
+
+=item * C<$params> - HashRef with keys: C<action>, C<payload> (HashRef with C<recall>)
+
+=back
 
 =item * Returns
 
@@ -17,8 +23,10 @@ Void
 =cut
 
 sub after_recall_action {
-    my ( $self, $action, $recall ) = @_;
+    my ( $self, $params ) = @_;
+
+    # my $action = $params->{action};
+    # my $recall = $params->{payload}{recall};
+
     return;
 }
-
-

@@ -6,7 +6,13 @@ Context: Called after account-related actions are performed.
 
 =item * Parameters
 
-C<$self>, C<$action>, C<$account_context>
+=over 8
+
+=item * C<$self>
+
+=item * C<$params> - HashRef with keys: C<action>, C<payload> (HashRef with account context data)
+
+=back
 
 =item * Returns
 
@@ -17,8 +23,10 @@ Void
 =cut
 
 sub after_account_action {
-    my ( $self, $action, $account_context ) = @_;
+    my ( $self, $params ) = @_;
+
+    # my $action          = $params->{action};
+    # my $account_context = $params->{payload};
+
     return;
 }
-
-
