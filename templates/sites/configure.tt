@@ -22,7 +22,8 @@
             <div class="col-sm-10 col-sm-push-2">
                 <h1><% project %> - Configuration</h1>
 
-                <form method="post">
+                <form method="post" action="/cgi-bin/koha/plugins/run.pl">
+                    [% INCLUDE 'csrf-token.inc' %]
                     <input type="hidden" name="class" value="[% CLASS %]" />
                     <input type="hidden" name="method" value="[% METHOD %]" />
                     <input type="hidden" name="save" value="1" />
