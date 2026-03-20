@@ -202,6 +202,19 @@ GITIGNORE
             l( 'info', "created openapi.json — run 'koha-plugin add api-route' to add routes" );
         }
 
+        # Copy staticapi.json template when static hook is selected
+        if ( $selected{static} ) {
+            my $src  = path( asset_dir('templates/staticapi.json') );
+            my $dest = path("$path/staticapi.json");
+            if ( $src->exists ) {
+                $src->copy($dest);
+                l( 'info', 'created staticapi.json' );
+            }
+            else {
+                l( 'warning', 'staticapi.json template not found — create it manually' );
+            }
+        }
+
         1;
     };
 

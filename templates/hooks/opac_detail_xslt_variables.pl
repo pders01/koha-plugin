@@ -43,6 +43,9 @@ HashRef - variables to merge into the XSLT context
 sub opac_detail_xslt_variables {
     my ( $self, $params ) = @_;
 
-    return;
+    # my $biblionumber = $params->{biblionumber};
+    # return { MY_VAR => 'value' };
+
+    return {};
 }
 

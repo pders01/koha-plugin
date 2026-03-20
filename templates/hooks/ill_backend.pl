@@ -22,7 +22,7 @@ String backend identifier
 
 sub ill_backend {
     my ($self) = @_;
-    return 'ExampleBackend';
+    return '[% project %]';
 }
 
 
