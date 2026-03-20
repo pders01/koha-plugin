@@ -49,6 +49,57 @@ Interactively add an OpenAPI route to your plugin's API.
 
 Path parameters (e.g., `/widgets/{widget_id}`) are auto-detected and added to the spec.
 
+#### `koha-plugin add migration`
+
+Create a numbered SQL migration file in the plugin's `migrations/` directory.
+
+**Non-interactive:** `--description create_widgets_table`
+
+**Creates:** `<plugin_dir>/migrations/001_<description>.sql`
+
+Files are auto-numbered sequentially. The generated SQL includes `{{table_name}}`
+placeholders for use with
+[LMSCloud MigrationHelper](https://github.com/LMSCloudPaulD/koha-plugin-lmscloud-util).
+
+#### `koha-plugin add hook`
+
+Append a hook method to an existing plugin base module.
+
+**Non-interactive:** `--type opac_js`
+
+Discovers available hooks from `templates/hooks/` at runtime. If the hook is a UI
+hook (admin, configure, report, tool), the corresponding `.tt` template is also
+generated. Duplicate hooks are detected and skipped.
+
+#### `koha-plugin add background-job`
+
+Scaffold a `Koha::BackgroundJob` subclass and register it in `background_tasks`.
+
+**Non-interactive:** `--type sync_records`
+
+**Creates:** `<plugin_dir>/<ClassName>.pm` with `job_type`, `process`, and `enqueue`
+methods. The class name is derived from the job type (`sync_records` becomes
+`SyncRecords`). The `background_tasks` return hash in the base module is updated
+automatically.
+
+Requires the `background_tasks` hook to be present in the base module. If missing,
+run `koha-plugin add hook --type background_tasks` first.
+
+---
+
+### `koha-plugin check`
+
+Validate the plugin for common issues. Returns exit code 1 on errors (CI-friendly).
+
+**Checks:**
+- Config file presence and completeness
+- Base module exists with `use Modern::Perl` and version declaration
+- Every `x-mojo-to` in `openapi.json` points to an existing controller and method
+- JSON import present when `api_routes` hook exists
+- `staticapi.json` exists when `static_routes` hook is present
+- UI hooks (admin, configure, report, tool) have matching `.tt` templates
+- `PLUGIN.yml` manifest exists
+
 ---
 
 ### `koha-plugin increment [--type TYPE] [--times N]`
