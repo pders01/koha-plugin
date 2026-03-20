@@ -16,7 +16,7 @@ use Term::UI       ();
 use Term::ReadLine ();
 
 use Local::Metadata qw( metadata_from_env );
-use Local::Util     qw( l asset_dir resolve );
+use Local::Util     qw( l asset_dir resolve json_encoder );
 
 use Exporter 'import';
 
@@ -293,7 +293,7 @@ sub _add_api_route {
     $spec->{$route_path}{$method} = $route;
 
     # Write back
-    my $j = JSON->new->utf8->pretty->canonical;
+    my $j = json_encoder();
     $spec_file->parent->mkpath;
     $spec_file->spew_utf8( $j->encode($spec) );
 
@@ -347,6 +347,8 @@ use Modern::Perl;
 
 use Mojo::Base 'Mojolicious::Controller';
 
+use Try::Tiny qw( catch try );
+
 =head1 API
 
 =head2 Methods
@@ -367,10 +369,15 @@ sub _method_stub {
 sub $method_name {
     my \$c = shift->openapi->valid_input or return;
 
-    return \$c->render(
-        status  => 200,
-        openapi => {},
-    );
+    return try {
+        return \$c->render(
+            status  => 200,
+            openapi => {},
+        );
+    }
+    catch {
+        \$c->unhandled_exception(\$_);
+    };
 }
 STUB
 }
