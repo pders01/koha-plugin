@@ -120,9 +120,9 @@ sub run_init {
 
         $tt->process(
             '[a].pm.tt',
-            {   c        => $components->@[ $CONST->{'INDEX_TLD'} ],
-                b        => $components->@[ $CONST->{'INDEX_ORG'} ],
-                a        => $components->@[ $CONST->{'INDEX_PROJECT'} ],
+            {   tld      => $components->@[ $CONST->{'INDEX_TLD'} ],
+                org      => $components->@[ $CONST->{'INDEX_ORG'} ],
+                project  => $components->@[ $CONST->{'INDEX_PROJECT'} ],
                 version  => $metadata->{version} // '0.0.1',
                 metadata => stringify_metadata($metadata),
                 ( $hooks->@* ? map { $_ => 1 } $hooks->@* : () )

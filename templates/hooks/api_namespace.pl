@@ -14,7 +14,7 @@ C<$self>
 
 =item * Returns
 
-String representing the subdomain (C<[a]>), e.g., for C<[c].[b].[a]>.
+String representing the subdomain, e.g., the project part of your plugin name.
 
 =back
 
@@ -23,8 +23,7 @@ String representing the subdomain (C<[a]>), e.g., for C<[c].[b].[a]>.
 sub api_namespace {
     my $self = shift;
 
-    # [a] here represents the <project> part of your name, but you can use
-    # whatever you want here as long as it doesn't clash with other plugins.
-    return '[% a %]';
+    # This should be unique to your plugin to avoid namespace clashes.
+    return '[% project %]';
 }
 

@@ -75,8 +75,8 @@ sub _add_action {
 
     $tt->process(
         'sites/action.tt',
-        {   a      => $components->@[-1],
-            action => $action,
+        {   project => $components->@[-1],
+            action  => $action,
         },
         "$path/$action.tt"
     );

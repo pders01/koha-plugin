@@ -1,4 +1,4 @@
-package Koha::Plugin::[% c %]::[% b %]::[% a %] v[% version %];
+package Koha::Plugin::[% tld %]::[% org %]::[% project %] v[% version %];
 
 use base qw(Koha::Plugins::Base);
 
