@@ -183,11 +183,9 @@ GITIGNORE
                 }
             );
             for my $action (@action_hooks) {
-                $action_tt->process(
-                    'sites/action.tt',
+                $action_tt->process( 'sites/action.tt',
                     { project => $components->@[ $CONST->{'INDEX_PROJECT'} ], action => $action },
-                    "$path/$action.tt",
-                );
+                    "$path/$action.tt", );
                 if ( $action_tt->error ) {
                     l( 'warning', "failed to generate $action.tt: " . $action_tt->error );
                 }

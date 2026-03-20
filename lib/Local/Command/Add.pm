@@ -292,6 +292,7 @@ sub _ensure_controller {
     if ( $controller_path->exists ) {
         my $content = $controller_path->slurp_utf8;
         if ( $content !~ /sub\s+\Q$method_name\E\b/smx ) {
+
             # Append method stub before the final 1;
             my $stub = _method_stub($method_name);
             $content =~ s/^(1;)$/$stub\n$1/smx;
