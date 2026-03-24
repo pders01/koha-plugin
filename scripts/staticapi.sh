@@ -57,7 +57,8 @@ fi
   echo "{"
   for i in "${!json_fragments[@]}"; do
     path="${json_fragments[$i]}"
-    echo "  \"$path\": $spec_body"
+    path_json=$(printf '%s' "$path" | jq -R .)
+    echo "  $path_json: $spec_body"
     if [ "$i" -lt $((${#json_fragments[@]} - 1)) ]; then
       echo ","
     fi
