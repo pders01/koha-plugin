@@ -3,6 +3,7 @@
 A scaffolding tool for Koha plugins. Generates correct, working plugin code with interactive hook selection, API route composition, and version management.
 
 [![GPLv3 License](https://img.shields.io/badge/License-GPL%20v3-yellow.svg)](https://opensource.org/licenses/)
+[![Hypercommit](https://img.shields.io/badge/Hypercommit-DB2475)](https://hypercommit.com/koha-plugin)
 
 ## What it does
 
