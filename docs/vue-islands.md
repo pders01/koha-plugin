@@ -258,27 +258,19 @@ the directory name prefix.
 
 #### Recommended setup for Vue islands
 
+This is what `koha-plugin add vue` generates:
+
 ```
 vite.config.js:  outDir: "Koha/Plugin/Com/Example/MyPlugin"
 koha-plugin.yml: static_dir_name: "."
 intranet_js:     /api/v1/contrib/MyPlugin/static/MyComponent.js
 ```
 
-Or if you prefer a subdirectory for organization, just know the full path
-must be reflected in the URL:
-
-```
-vite.config.js:  outDir: "Koha/Plugin/Com/Example/MyPlugin/dist"
-koha-plugin.yml: static_dir_name: "dist"
-staticapi keys:  /MyComponent.js (NOT /dist/MyComponent.js)
-intranet_js:     /api/v1/contrib/MyPlugin/static/MyComponent.js
-file on disk:    Koha/Plugin/.../MyPlugin/dist/MyComponent.js
-resolves to:     bundle_path + "/MyComponent.js" — WRONG (missing dist/)
-```
-
-**The subdirectory approach does NOT work** because `Static#get` resolves
-relative to `bundle_path`, not to a subdirectory. Files must be directly
-under `bundle_path` or Koha won't find them.
+Built files go directly into the plugin directory so that `Static#get`
+can resolve them from `bundle_path`. **Do not use a subdirectory** (e.g.,
+`outDir: ".../MyPlugin/dist"`) — `Static#get` resolves relative to
+`bundle_path`, not to a subdirectory, so files in `dist/` would not be
+found at runtime.
 
 ### Known limitations
 
