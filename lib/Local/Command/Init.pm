@@ -104,7 +104,7 @@ sub run_init {
     my $components = [ split /::/smx, $metadata->{name} ];
     my $name       = join q{/}, $components->@*;
     my $path       = path("$cwd/$name");
-    if ( !$path->mkdir ) {
+    if ( !$path->mkpath ) {
         l( 'error', "plugin path could not be created: $path" ) and return;
     }
 
