@@ -861,7 +861,7 @@ sub _add_vue {
         l( 'warning', 'vite.config.js already exists, skipping' );
     }
     else {
-        my $out_dir = "$plugin_dir/dist";
+        my $out_dir = "$plugin_dir";
         $vite_config->spew_utf8( _vite_config_template( $component_name, $out_dir ) );
         l( 'info', 'created vite.config.js' );
     }
@@ -987,7 +987,7 @@ defineProps({
   </div>
 </template>
 
-<style scoped>
+<style>
 .plugin-island {
   font-family: inherit;
   padding: 1.5em;
@@ -1039,11 +1039,9 @@ export default defineConfig({
     },
     outDir: "$out_dir",
     emptyOutDir: false,
-    // To use Koha's bundled Vue instead of shipping your own,
-    // uncomment the following and add an import map to your page:
-    // rollupOptions: {
-    //   external: ["vue"],
-    // },
+    rollupOptions: {
+      external: ["vue"],
+    },
   },
 });
 VITE
