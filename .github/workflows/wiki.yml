@@ -1,0 +1,91 @@
+name: Sync wiki
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/**"
+      - "README.md"
+      - ".github/workflows/wiki.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Stage wiki content
+        run: |
+          # The wiki action expects a single dir whose contents become
+          # the wiki tip. Anything not in this dir gets removed by the
+          # action's force-push.
+          mkdir -p wiki
+          cp docs/*.md wiki/
+
+          # README becomes the wiki Home so the landing page mirrors
+          # the repo's front matter.
+          cp README.md wiki/Home.md
+
+          # Rewrite repo-style links into wiki form. Two passes:
+          #   1) [Text](docs/page.md) and [Text](page.md) → [[page]]
+          #   2) Strip the "docs/" prefix on bare relative paths so
+          #      wiki readers don't follow it back into the repo.
+          # We deliberately drop the display-text override: the
+          # [[Display|Page]] variant collides with Markdown table-cell
+          # pipes and gets truncated at the |. Hyphenated page names
+          # like "plugin-permissions" read fine as nav labels. Links
+          # carrying a #anchor tail don't match and ride out as plain
+          # relative links — the wiki renders them as text rather
+          # than 404'ing the page.
+          for f in wiki/*.md; do
+            sed -i -E \
+              -e 's/\[[^]]+\]\(docs\/([A-Za-z0-9_-]+)\.md\)/[[\1]]/g' \
+              -e 's/\[[^]]+\]\(([A-Za-z0-9_-]+)\.md\)/[[\1]]/g' \
+              "$f"
+          done
+
+          # Sidebar grouped by section so the nav mirrors the repo's
+          # docs structure rather than alpha-sorting. Sidebar uses bare
+          # [[Page-Name]] for the same table-pipe reason as the inline
+          # rewrite — keeps one link convention across the wiki.
+          {
+            echo "## Getting started"
+            for n in Home quickstart commands; do
+              [ -f "wiki/${n}.md" ] && echo "- [[${n}]]"
+            done
+            echo
+            echo "## Authoring plugins"
+            for n in how-to-write-a-simple-plugin vue-islands pod-style-guide koha-plugin-hooks; do
+              [ -f "wiki/${n}.md" ] && echo "- [[${n}]]"
+            done
+            echo
+            echo "## Patterns: workarounds for missing native hooks"
+            for n in plugin-permissions plugin-audit-logging plugin-transactions plugin-cron-idempotency plugin-additional-fields plugin-koha-integrations plugin-rest-api plugin-ui-conventions plugin-rrule plugin-i18n plugin-cypress plugin-module-organization plugin-ci; do
+              [ -f "wiki/${n}.md" ] && echo "- [[${n}]]"
+            done
+            echo
+            echo "## Surveys"
+            for n in koha-extension-gaps; do
+              [ -f "wiki/${n}.md" ] && echo "- [[${n}]]"
+            done
+          } > wiki/_Sidebar.md
+
+          # Footer: pointer back to the canonical source so wiki readers
+          # don't sink edits into the wiki UI (those get overwritten on
+          # the next sync). github.repository expands to owner/repo.
+          cat > wiki/_Footer.md <<EOF
+          ---
+          Source of truth: [\`docs/\`](https://github.com/${{ github.repository }}/tree/main/docs) in the main repo. Edits made through the GitHub Wiki UI are overwritten on the next push to main.
+          EOF
+
+      - name: Push to wiki
+        uses: Andrew-Chen-Wang/github-wiki-action@v4
+        env:
+          WIKI_DIR: wiki/
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_MAIL: actions@github.com
+          GH_NAME: github-actions[bot]
