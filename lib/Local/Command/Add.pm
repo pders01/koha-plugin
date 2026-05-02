@@ -555,6 +555,7 @@ sub _add_hook {
     my $plugin_dir = path( join q{/}, $components->@* );
     my $tt         = Template->new( { INCLUDE_PATH => $hooks_dir } );
 
+    my $added = 0;
     for my $hook_name (@hooks_to_add) {
 
         # Skip if already present
@@ -574,14 +575,17 @@ sub _add_hook {
         # Insert before the final 1;
         $content =~ s/^(1;\s*)$/\n$rendered\n$1/smx;
         l( 'info', "added hook '$hook_name'" );
+        $added++;
 
         # Generate companion files
         _hook_companions( $hook_name, $project, $plugin_dir );
     }
 
-    $base_module->spew_utf8($content);
+    if ($added) {
+        $base_module->spew_utf8($content);
+    }
 
-    return 1;
+    return $added ? 1 : 0;
 }
 
 sub _hook_companions {
@@ -904,7 +908,7 @@ sub _add_vue {
         if ( $content =~ /sub \s+ intranet_js\b/smx ) {
 
             # Append island registration to the intranet_js heredoc
-            if ( $content =~ s/(return \s* <<~'JS';)\n/$1\n$js_snippet\n/smx ) {
+            if ( $content =~ s/(return \s* <<~\s*'JS'\s*;)\n/$1\n$js_snippet\n/smx ) {
                 $base_module->spew_utf8($content);
                 l( 'info', "wired $tag_name into intranet_js" );
             }
@@ -920,7 +924,7 @@ sub _add_vue {
 
             # Re-read and inject
             $content = $base_module->slurp_utf8;
-            if ( $content =~ s/(return \s* <<~'JS';)\n/$1\n$js_snippet\n/smx ) {
+            if ( $content =~ s/(return \s* <<~\s*'JS'\s*;)\n/$1\n$js_snippet\n/smx ) {
                 $base_module->spew_utf8($content);
                 l( 'info', "wired $tag_name into intranet_js" );
             }
