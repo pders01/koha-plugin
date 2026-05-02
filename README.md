@@ -70,7 +70,7 @@ documents the current workaround and what native support would replace.
 - [Audit logging](docs/plugin-audit-logging.md) — flow plugin mutations into `action_logs` for `tools/viewlog.pl`
 - [Atomic transactions](docs/plugin-transactions.md) — `_txn` helper for multi-statement integrity under Plack `AutoCommit=1`
 - [Cron idempotency](docs/plugin-cron-idempotency.md) — reentrant `cronjob_nightly` via `action_logs` sentinels
-- [Additional fields](docs/plugin-additional-fields.md) — wire Koha's `additional_fields` to plugin entities without `Koha::Object`
+- [Additional fields](docs/plugin-additional-fields.md) — wire Koha's `additional_fields` to plugin entities on the raw-DBI path (plugins that register a DBIx::Class schema inherit the mixin directly)
 - [Koha taxonomies and calendar](docs/plugin-koha-integrations.md) — consume AVs, patron categories, desks, library groups, calendar
 - [REST API extension](docs/plugin-rest-api.md) — `openapi.json`, controllers, `x-koha-authorization`, shared logic
 - [UI conventions](docs/plugin-ui-conventions.md) — sidebar, `page-section`, DataTables, Bootstrap modals, light-DOM Lit

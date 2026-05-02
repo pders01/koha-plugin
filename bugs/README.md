@@ -27,7 +27,7 @@ Bug numbers are placeholders (`Bug TBD-NNNN`). Replace with the real Bugzilla id
 | [0002](0002-plugin-audit-action-hook.md) | Add `before_plugin_action` / `after_plugin_action` hook + module registry | [`plugin-audit-logging.md`](../docs/plugin-audit-logging.md) — `_audit` helper |
 | [0003](0003-koha-database-txn-helper.md) | Add `Koha::Database->txn(\&code)` helper | [`plugin-transactions.md`](../docs/plugin-transactions.md) — `_txn` helper |
 | [0004](0004-plugin-cron-idempotency.md) | Add `Koha::Plugin::Cron` base with `mark_done` / `already_done` | [`plugin-cron-idempotency.md`](../docs/plugin-cron-idempotency.md) — action_logs sentinel |
-| [0005](0005-additional-fields-mixin-for-dbi.md) | Expose `Koha::Object::Mixin::AdditionalFields` to plain DBI consumers | [`plugin-additional-fields.md`](../docs/plugin-additional-fields.md) — five private helpers |
+| [0005](0005-additional-fields-mixin-for-dbi.md) | Expose `Koha::Object::Mixin::AdditionalFields` to raw-DBI plugins (those that haven't registered a DBIx::Class schema) | [`plugin-additional-fields.md`](../docs/plugin-additional-fields.md) — five private helpers |
 | [0011](0011-koha-recurrence-shared-module.md) | Add `Koha::Recurrence` shared RFC 5545 module | [`plugin-rrule.md`](../docs/plugin-rrule.md) — per-plugin RRULE parsing |
 | [0012](0012-plugin-i18n-catalog-hook.md) | Plugin gettext catalogs via `Koha::Plugins::Base->translator` | [`plugin-i18n.md`](../docs/plugin-i18n.md) — per-plugin JSON dictionary |
 

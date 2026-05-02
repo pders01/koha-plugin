@@ -1,6 +1,6 @@
 ## Wiring Koha additional fields to plugin entities
 
-Koha's `additional_fields` / `additional_field_values` machinery lets admins add custom fields to a record type without schema changes. Core wires it up via `Koha::Object::Mixin::AdditionalFields`. Plugins that store data in their own tables via raw DBI cannot inherit the mixin, but they can integrate with the same admin UI and storage tables and reuse the staff-side template includes.
+Koha's `additional_fields` / `additional_field_values` machinery lets admins add custom fields to a record type without schema changes. Core wires it up via `Koha::Object::Mixin::AdditionalFields`. Plugins *can* opt into the full `Koha::Object` path — generate a DBIx::Class schema with `update_dbix_class_files.pl`, register it via `Koha::Schema->register_class` + `Koha::Database->schema({ new => 1 })` in a `BEGIN` block, and write `Koha::*` wrapper classes (the [KohaAdvent 2020-12-07 post](https://koha-community.gitlab.io/KohaAdvent/2020-12-07-dbic/) walks through it). The pattern below targets the lighter-weight alternative: plugins that keep their tables on raw DBI and skip the schema-registration dance. Those plugins can't inherit the mixin, but they can still integrate with the same admin UI and storage tables and reuse the staff-side template includes.
 
 ### What the user gets
 
@@ -10,10 +10,14 @@ Koha's `additional_fields` / `additional_field_values` machinery lets admins add
 
 ### Pattern
 
-The plugin uses raw DBI rather than `Koha::Object`, so we can't pull in
-`Koha::Object::Mixin::AdditionalFields`; we do the equivalent reads / writes
-ourselves. The four helpers below cover load, save (CGI form), save (JSON map),
-delete, and a bulk read for list views.
+When the plugin keeps its tables on raw DBI (no DBIx::Class schema
+registered) the `Koha::Object::Mixin::AdditionalFields` route is closed —
+the mixin needs a `Koha::Object` instance with a `result_source` to drive
+its load / save / delete loop. We do the equivalent reads / writes by
+hand. The four helpers below cover load, save (CGI form), save (JSON
+map), delete, and a bulk read for list views. Plugins that *do* register
+a DBIx::Class schema (per the KohaAdvent 2020-12-07 post linked above)
+inherit the mixin directly and skip this section.
 
 Per Koha coding guidelines (see `https://wiki.koha-community.org/wiki/Coding_Guidelines`), helpers reach for `C4::Context->dbh` themselves rather than accepting `$dbh` through the signature. DBI hands out the same connection on each call within a request.
 
@@ -224,6 +228,6 @@ for my $r ( @{$rosters} ) {
 
 ### Where native integration would help
 
-- `Koha::Object::Mixin::AdditionalFields` extended to plain DBI consumers via a documented helper module that takes `($dbh, $tablename, $record_id)`.
+- `Koha::Object::Mixin::AdditionalFields` extended to raw-DBI consumers (plugins that haven't registered a DBIx::Class schema) via a documented helper class that takes `($tablename, $record_id)` and reaches for `C4::Context->dbh` internally.
 - A scaffold helper that emits the full save / load / delete / bulk-read quartet so plugins don't copy-paste it.
 - A shared API contract for "save-from-map" so JSON endpoints can reuse the same validator instead of writing the `%allowed` filter by hand.
