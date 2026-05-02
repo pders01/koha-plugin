@@ -94,12 +94,13 @@ Scaffold a Vue 3 island component with a vite build pipeline.
 **Creates:**
 - `src/components/<Name>.vue` — Vue SFC with `<script setup>`, `<template>`, `<style>`
 - `src/main.js` — entry point exporting the component
-- `vite.config.js` — builds as ES module library, output to plugin's `dist/`
+- `vite.config.js` — builds as ES module library, output to plugin directory
 - `package.json` — Vue and vite dependencies with `build` and `dev` scripts
 
 Vue is externalized in the build — the component uses Koha's own Vue instance
-at runtime via import map. After running `npm install && npm run build`,
-register the island in your `intranet_js` hook via `registerIsland()`.
+at runtime via import map. The `intranet_js` hook is auto-wired with the
+`registerIsland()` call (added if missing). After scaffolding, run
+`npm install && npm run build`.
 
 **Note:** Requires a Koha patch (Bug 42150) for `registerIsland()` and the
 Vue import map. See [Vue Islands Guide](vue-islands.md) for full details.

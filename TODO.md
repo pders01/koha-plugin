@@ -13,6 +13,6 @@
 
 ## Next
 
-- [ ] `add vue` — scaffold a Vue island component with vite build setup and static_routes integration.
+- [x] `add vue` — scaffold a Vue island component with vite build setup and static_routes integration.
 - [ ] Explore plugin-provided Pinia store sharing with core islands (needs Koha-side design).
 - [ ] Address CSP nonce for plugin inline scripts when Koha enforces CSP.
