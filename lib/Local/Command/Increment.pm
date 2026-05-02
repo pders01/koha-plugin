@@ -123,14 +123,14 @@ sub _update_dotenv_legacy {
 
     my $lines           = [ $dotenv->lines_utf8( { chomp => 1 } ) ];
     my $version_updated = 0;
-    for my $line ( $lines->@* ) {
-        if ( $line =~ /^PLUGIN_VERSION=/smx ) {
-            $line            = "PLUGIN_VERSION=$new_version";
+    for ( $lines->@* ) {
+        if ( /^PLUGIN_VERSION=/smx ) {
+            $_               = "PLUGIN_VERSION=$new_version";
             $version_updated = 1;
         }
 
-        if ( $version_updated and $line =~ /^PLUGIN_DATE_UPDATED=/smx ) {
-            $line = join q{}, 'PLUGIN_DATE_UPDATED=', DateTime->now->ymd(q{-});
+        if ( $version_updated and /^PLUGIN_DATE_UPDATED=/smx ) {
+            $_ = join q{}, 'PLUGIN_DATE_UPDATED=', DateTime->now->ymd(q{-});
         }
     }
 
@@ -164,31 +164,31 @@ sub _update_base_module {
 
     my $lines       = [ $base_module->lines_utf8( { chomp => 1 } ) ];
     my $in_metadata = 0;
-    for my $line ( $lines->@* ) {
+    for ( $lines->@* ) {
 
         # Update the version in the package declaration
-        if ( $line =~ /^package\s+([[:alnum:]:]+)\s+v([\d]+[.][\d]+[.][\d]+);/smx ) {
+        if ( /^package\s+([[:alnum:]:]+)\s+v([\d]+[.][\d]+[.][\d]+);/smx ) {
             my $package_name = $1;
-            $line = "package $package_name v$new_version;";
+            $_ = "package $package_name v$new_version;";
         }
 
         # Detect if we are inside the $metadata block
-        if ( $line =~ /\$metadata\s*=\s*{/smx ) {
+        if ( /\$metadata\s*=\s*{/smx ) {
             $in_metadata = 1;
         }
 
         # Only handle lines inside $metadata block — preserve user's formatting
         if ($in_metadata) {
-            if ( $line =~ /^(\s*'?version'?\s*=>\s*')[\d]+[.][\d]+[.][\d]+(',?)$/smx ) {
-                $line = "${1}${new_version}${2}";
+            if ( /^(\s*'?version'?\s*=>\s*')[\d]+[.][\d]+[.][\d]+(',?)$/smx ) {
+                $_ = "${1}${new_version}${2}";
             }
 
-            if ( $line =~ /^(\s*'?date_updated'?\s*=>\s*')[\d]+-[\d]+-[\d]+(',?)$/smx ) {
+            if ( /^(\s*'?date_updated'?\s*=>\s*')[\d]+-[\d]+-[\d]+(',?)$/smx ) {
                 my $date = DateTime->now->ymd(q{-});
-                $line = "${1}${date}${2}";
+                $_ = "${1}${date}${2}";
             }
 
-            if ( $line =~ /\s*};\s*/smx ) {
+            if ( /\s*};\s*/smx ) {
                 $in_metadata = 0;
             }
         }
