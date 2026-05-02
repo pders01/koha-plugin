@@ -61,6 +61,26 @@ just binary
 - [POD style guide](docs/pod-style-guide.md) — conventions for hook stubs
 - [Live Circ Feed example](examples/circ-feed/) — full-featured demo plugin with API, Vue island, and polling
 
+### Patterns: workarounds for missing native integration
+
+Patterns extracted from real plugins where Koha lacks a first-class hook. Each
+documents the current workaround and what native support would replace.
+
+- [Plugin permissions](docs/plugin-permissions.md) — granular sub-permissions under module bit 19, with `intranet_js` label injection
+- [Audit logging](docs/plugin-audit-logging.md) — flow plugin mutations into `action_logs` for `tools/viewlog.pl`
+- [Atomic transactions](docs/plugin-transactions.md) — `_txn` helper for multi-statement integrity under Plack `AutoCommit=1`
+- [Cron idempotency](docs/plugin-cron-idempotency.md) — reentrant `cronjob_nightly` via `action_logs` sentinels
+- [Additional fields](docs/plugin-additional-fields.md) — wire Koha's `additional_fields` to plugin entities without `Koha::Object`
+- [Koha taxonomies and calendar](docs/plugin-koha-integrations.md) — consume AVs, patron categories, desks, library groups, calendar
+- [REST API extension](docs/plugin-rest-api.md) — `openapi.json`, controllers, `x-koha-authorization`, shared logic
+- [UI conventions](docs/plugin-ui-conventions.md) — sidebar, `page-section`, DataTables, Bootstrap modals, light-DOM Lit
+- [RRule recurrence](docs/plugin-rrule.md) — RFC 5545 subset for plugin scheduling
+- [Koha extension gaps](docs/koha-extension-gaps.md) — surveys subsystems that are internally extensible (messaging preferences, OPAC user menu, pages, AdditionalContents) but lack plugin wiring; sketches the smallest hooks that would close each gap
+- [Plugin i18n](docs/plugin-i18n.md) — JSON dictionaries shared between Perl helpers and bundled Lit components, with fallback to English source keys
+- [Cypress integration tests](docs/plugin-cypress.md) — running Cypress against ktd from a plugin tree, fixture helpers, memcached cache invalidation, runner script
+- [Module organization](docs/plugin-module-organization.md) — `Lib::*` helpers, `Controllers/<Surface>/<Op>.pm` per-op packages, numbered migration registry in `Lib::Schema`
+- [CI for plugins](docs/plugin-ci.md) — GitHub Actions workflow against ktd, weekly Koha clone + image caches, ready-signal polling, tag-gated release
+
 ## Configuration
 
 The tool reads plugin metadata from `koha-plugin.yml` (or `koha-plugin.json`):
