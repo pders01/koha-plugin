@@ -29,6 +29,10 @@ increment type='patch' times='1':
 package:
   {{cli}} package
 
+# Builds an unsigned Architecture: all Debian package in dist/debian.
+package-deb output_dir='dist/debian':
+  {{cli}} package-deb {{output_dir}}
+
 # Updates the staticapi.json file within the plugin to expose all files within the `static` directory.
 staticapi:
   {{cli}} staticapi

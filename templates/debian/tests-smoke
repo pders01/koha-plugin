@@ -1,0 +1,5 @@
+#!/bin/sh
+set -eu
+
+test -r '/usr/share/koha/plugins/{{MODULE_PATH}}'
+dpkg-query -L '{{PACKAGE_NAME}}' | grep -Fxq '/usr/share/koha/plugins/{{MODULE_PATH}}'

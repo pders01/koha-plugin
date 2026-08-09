@@ -1,0 +1,47 @@
+#!/bin/sh
+set -e
+
+PLUGIN_CLASS='{{PLUGIN_CLASS}}'
+PLUGIN_MODULE='{{MODULE_RELATIVE_PATH}}'
+INSTALLER='/usr/share/koha/bin/devel/install_plugins.pl'
+CONFIGURE_INSTANCE='/usr/lib/{{PACKAGE_NAME}}/configure-instance'
+
+plugins_enabled() {
+    instance=$1
+    value=$(xmlstarlet sel -t -v 'yazgfs/config/enable_plugins' "/etc/koha/sites/$instance/koha-conf.xml" 2>/dev/null || true)
+    [ "$value" = '1' ]
+}
+
+if [ "${1:-}" = 'configure' ] && command -v koha-list >/dev/null 2>&1; then
+    for instance in $(koha-list); do
+        "$CONFIGURE_INSTANCE" "$instance"
+
+        writable_plugins_dir=$(xmlstarlet sel -t -v \
+            '/yazgfs/config/pluginsdir[1]' \
+            "/etc/koha/sites/$instance/koha-conf.xml")
+        duplicate="$writable_plugins_dir/$PLUGIN_MODULE"
+        if [ -e "$duplicate" ]; then
+            echo "ERROR: $instance already has a writable KPZ copy at $duplicate" >&2
+            echo "Remove that copy before configuring {{PACKAGE_NAME}}." >&2
+            exit 1
+        fi
+
+        if ! plugins_enabled "$instance"; then
+            echo "Skipping $instance: Koha plugin system is disabled."
+            continue
+        fi
+
+        echo "Registering $PLUGIN_CLASS for Koha instance $instance"
+        koha-shell "$instance" -c "$INSTALLER --include $PLUGIN_CLASS"
+
+        if koha-list --plack | grep -Fxq "$instance"; then
+            koha-plack --reload "$instance"
+        fi
+        if koha-worker --status "$instance" >/dev/null 2>&1; then
+            koha-worker --restart --all-queues "$instance"
+        fi
+    done
+fi
+
+#DEBHELPER#
+exit 0

@@ -1,0 +1,5 @@
+{{PACKAGE_NAME}} ({{PACKAGE_VERSION}}) unstable; urgency=medium
+
+  * Build plugin release {{PLUGIN_VERSION}}.
+
+ -- {{MAINTAINER}}  {{CHANGELOG_DATE}}

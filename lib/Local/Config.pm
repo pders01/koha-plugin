@@ -36,6 +36,10 @@ my @FIELDS = qw(
     date_updated
     minimum_version
     maximum_version
+    debian_package_name
+    debian_maintainer
+    debian_revision
+    debian_dependencies
 );
 
 sub find_config {

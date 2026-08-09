@@ -8,5 +8,9 @@
     "date_authored": "today",
     "date_updated": "today",
     "minimum_version": "",
-    "maximum_version": ""
+    "maximum_version": "",
+    "debian_package_name": "",
+    "debian_maintainer": "",
+    "debian_revision": "1",
+    "debian_dependencies": ""
 }

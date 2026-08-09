@@ -1,0 +1,16 @@
+Source: {{PACKAGE_NAME}}
+Section: web
+Priority: optional
+Maintainer: {{MAINTAINER}}
+Build-Depends: debhelper-compat (= 13)
+Standards-Version: 4.6.2
+Rules-Requires-Root: no
+
+Package: {{PACKAGE_NAME}}
+Architecture: all
+Depends: ${misc:Depends}, ${perl:Depends}, {{DEPENDS}}
+Description: {{DESCRIPTION}}
+ This package installs a plugin for Koha.
+ .
+ Plugin code is shared by package-managed Koha instances. Lifecycle state
+ remains in each instance database.

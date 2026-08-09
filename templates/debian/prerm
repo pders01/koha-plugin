@@ -1,0 +1,22 @@
+#!/bin/sh
+set -e
+
+PLUGIN_CLASS='{{PLUGIN_CLASS}}'
+UNREGISTER='/usr/lib/{{PACKAGE_NAME}}/unregister'
+
+if [ "${1:-}" = 'remove' ] && command -v koha-list >/dev/null 2>&1; then
+    for instance in $(koha-list); do
+        echo "Disabling $PLUGIN_CLASS for Koha instance $instance"
+        koha-shell "$instance" -c "$UNREGISTER"
+
+        if koha-list --plack | grep -Fxq "$instance"; then
+            koha-plack --reload "$instance"
+        fi
+        if koha-worker --status "$instance" >/dev/null 2>&1; then
+            koha-worker --restart --all-queues "$instance"
+        fi
+    done
+fi
+
+#DEBHELPER#
+exit 0

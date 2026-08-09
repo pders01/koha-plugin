@@ -1,0 +1,12 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+
+use Koha::Plugins ();
+
+Koha::Plugins->RemovePlugins(
+    {
+        plugin_class => '{{PLUGIN_CLASS}}',
+        disable      => 1,
+    }
+);

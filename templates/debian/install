@@ -1,0 +1,3 @@
+Koha usr/share/koha/plugins
+debian/configure-instance usr/lib/{{PACKAGE_NAME}}
+debian/unregister usr/lib/{{PACKAGE_NAME}}

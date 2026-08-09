@@ -149,6 +149,40 @@ Run `increment` before packaging to ensure the version is correct.
 
 ---
 
+### `koha-plugin package-deb [output_dir]`
+
+Create an unsigned `Architecture: all` Debian package. The default output directory
+is `dist/debian`. The build uses Docker or Podman with a Debian builder image; set
+`DEB_NATIVE_BUILD=1` to use locally installed Debian packaging tools instead.
+
+Add the Debian fields to `koha-plugin.yml`:
+
+```yaml
+debian_package_name: "koha-plugin-com-example-myplugin" # optional; derived by default
+debian_maintainer: "Example Maintainer <maintainer@example.org>"
+debian_revision: "1"
+debian_dependencies: "libexample-perl, libanother-perl"
+```
+
+`minimum_version` and `maximum_version` become enforced `koha-common` dependency
+bounds. The package owns one shared copy under `/usr/share/koha/plugins` and adds
+that directory as a secondary `<pluginsdir>` for each existing instance; the normal
+writable instance directory remains first. Package installation initializes or
+upgrades every plugin-enabled Koha instance. Package removal disables the plugin
+without deleting its data. Do not use Koha's staff-interface **Uninstall** action for
+a package-managed plugin.
+
+Generate and inspect the Debian source tree without invoking a builder:
+
+```bash
+DEB_GENERATE_ONLY=1 perl bin/koha-plugin.pl package-deb
+```
+
+See [Debian packaging](plugin-debian-packaging.md) for lifecycle limitations and the
+local installation test plan.
+
+---
+
 ### `koha-plugin clean`
 
 Remove the `Koha/` directory and `package.json`. Use this to start fresh.

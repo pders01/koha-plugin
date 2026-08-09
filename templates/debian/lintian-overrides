@@ -1,0 +1,2 @@
+# Releases are published by the plugin project, not uploaded to the Debian archive.
+{{PACKAGE_NAME}}: initial-upload-closes-no-bugs

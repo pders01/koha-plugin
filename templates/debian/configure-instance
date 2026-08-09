@@ -1,0 +1,56 @@
+#!/bin/sh
+set -eu
+
+PACKAGE_NAME='{{PACKAGE_NAME}}'
+SHARED_PLUGINS_DIR='/usr/share/koha/plugins'
+
+if [ "$#" -ne 1 ]; then
+    echo "Usage: $0 INSTANCE" >&2
+    exit 1
+fi
+
+instance=$1
+config="/etc/koha/sites/$instance/koha-conf.xml"
+
+if [ ! -f "$config" ]; then
+    echo "Koha configuration not found: $config" >&2
+    exit 1
+fi
+if ! command -v xmlstarlet >/dev/null 2>&1; then
+    echo "xmlstarlet is required to configure $SHARED_PLUGINS_DIR" >&2
+    exit 1
+fi
+
+count=$(xmlstarlet sel -t -v \
+    "count(/yazgfs/config/pluginsdir[.='$SHARED_PLUGINS_DIR'])" \
+    "$config")
+total=$(xmlstarlet sel -t -v 'count(/yazgfs/config/pluginsdir)' "$config")
+first=$(xmlstarlet sel -t -v '/yazgfs/config/pluginsdir[1]' "$config")
+
+# Keep the normal writable directory first. If the shared directory is already a
+# single secondary entry, avoid rewriting administrator configuration.
+if [ "$count" = '1' ] && { [ "$first" != "$SHARED_PLUGINS_DIR" ] || [ "$total" = '1' ]; }; then
+    exit 0
+fi
+
+dir=$(dirname "$config")
+tmp=$(mktemp "$dir/.koha-conf.xml.XXXXXX")
+backup="${config}.before-${PACKAGE_NAME}"
+trap 'rm -f "$tmp"' EXIT HUP INT TERM
+
+# Remove duplicate or incorrectly ordered shared entries, then append exactly one.
+xmlstarlet ed \
+    -d "/yazgfs/config/pluginsdir[.='$SHARED_PLUGINS_DIR']" \
+    -s '/yazgfs/config' -t elem -n pluginsdir -v "$SHARED_PLUGINS_DIR" \
+    "$config" >"$tmp"
+
+xmlstarlet val --well-formed "$tmp" >/dev/null
+
+# Preserve the original administrator file once, including its secret-safe mode.
+if [ ! -e "$backup" ]; then
+    cp -a "$config" "$backup"
+fi
+chown --reference="$config" "$tmp"
+chmod --reference="$config" "$tmp"
+mv -f "$tmp" "$config"
+trap - EXIT HUP INT TERM

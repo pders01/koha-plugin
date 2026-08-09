@@ -44,6 +44,7 @@ my %COMMANDS = (
     'add'         => \&_cmd_add,
     'increment'   => \&_cmd_increment,
     'package'     => \&_cmd_package,
+    'package-deb' => \&_cmd_package_deb,
     'staticapi'   => \&_cmd_staticapi,
     'ktd'         => \&_cmd_ktd,
     'update-meta' => \&_cmd_update_meta,
@@ -91,6 +92,7 @@ Commands:
         vue                       Vue island component with vite build
     increment [options]         Increment version (patch, minor, major)
     package                     Create a .kpz file
+    package-deb [OUTPUT_DIR]    Create an unsigned Debian package
     clean                       Remove Koha/ directory and package.json
     staticapi                   Update staticapi.json
     ktd [container] [binary]    Deploy to KTD container
@@ -188,6 +190,23 @@ sub _cmd_package {
     l( 'info', 'packaging plugin...' );
     _run_script( 'package.sh', $ENV{PLUGIN_NAME}, $ENV{PLUGIN_RELEASE_FILENAME}, $ENV{PLUGIN_VERSION} );
     l( 'info', 'plugin packaged' );
+}
+
+sub _cmd_package_deb {
+    my ($output_dir) = @_;
+    $output_dir //= 'dist/debian';
+
+    l( 'info', 'packaging plugin as Debian package...' );
+    _run_script(
+        'package-deb.sh',
+        $ENV{PLUGIN_NAME},
+        $ENV{PLUGIN_RELEASE_FILENAME},
+        $ENV{PLUGIN_VERSION},
+        $ENV{PLUGIN_MINIMUM_VERSION},
+        $ENV{PLUGIN_MAXIMUM_VERSION},
+        $output_dir,
+    );
+    l( 'info', 'Debian package created' );
 }
 
 sub _cmd_staticapi {

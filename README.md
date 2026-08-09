@@ -80,6 +80,7 @@ documents the current workaround and what native support would replace.
 - [Cypress integration tests](docs/plugin-cypress.md) — running Cypress against ktd from a plugin tree, fixture helpers, memcached cache invalidation, runner script
 - [Module organization](docs/plugin-module-organization.md) — `Lib::*` helpers, `Controllers/<Surface>/<Op>.pm` per-op packages, numbered migration registry in `Lib::Schema`
 - [CI for plugins](docs/plugin-ci.md) — GitHub Actions workflow against ktd, weekly Koha clone + image caches, ready-signal polling, tag-gated release
+- [Debian packaging](docs/plugin-debian-packaging.md) — package layout, Koha version bounds, multi-instance lifecycle, local validation, and forge-neutral CI design
 
 ## Configuration
 
